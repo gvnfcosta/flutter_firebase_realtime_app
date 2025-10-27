@@ -1,7 +1,6 @@
-// lib/screens/signup_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 import 'user_form_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -33,12 +32,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
         throw Exception('Erro ao recuperar UID do usuário.');
       }
 
+      // ✅ Salva UID e email localmente (armazenamento persistente)
+      await LocalStorage.saveLogin(
+          uid, _emailCtrl.text.trim(), _passCtrl.text.trim());
+
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Conta criada com sucesso. Complete seu cadastro.')),
       );
 
-      // Navega para a tela de cadastro de dados pessoais, passando o uid
+      // ✅ Navega para tela de cadastro de dados pessoais
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => UserFormScreen(uid: uid)),
@@ -124,7 +128,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _loading ? null : _signup,
-                child: _loading ? const CircularProgressIndicator() : const Text('Cadastrar'),
+                child: _loading
+                    ? const CircularProgressIndicator()
+                    : const Text('Cadastrar'),
               ),
               const SizedBox(height: 8),
               TextButton(

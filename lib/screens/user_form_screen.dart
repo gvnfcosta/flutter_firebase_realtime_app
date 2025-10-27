@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_realtime_app/screens/user_detail_screen.dart';
 import 'package:provider/provider.dart';
 import '../models/user_model.dart';
 import '../providers/user_provider.dart';
@@ -36,12 +37,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const UserDataScreen()),
+        MaterialPageRoute(builder: (_) => const UserDetailScreen()),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar: $e')),
       );
+      debugPrint("Erro ao salvar usuário: $e");
     } finally {
       setState(() => _loading = false);
     }
