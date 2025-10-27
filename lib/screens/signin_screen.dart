@@ -1,11 +1,11 @@
-// lib/screens/signin_screen.dart
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_firebase_realtime_app/screens/signup_screen.dart';
-import 'package:flutter_firebase_realtime_app/screens/user_detail_screen.dart';
-import 'package:flutter_firebase_realtime_app/screens/user_form_screen.dart';
 import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
+import 'signup_screen.dart';
+import 'user_detail_screen.dart';
+import 'user_form_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/user_provider.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -20,17 +20,17 @@ class _SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
 
-@override
+  @override
   void initState() {
     super.initState();
-    _loadSavedCredentials();
+    _loadSavedLogin();
   }
 
-  Future<void> _loadSavedCredentials() async {
-    final savedEmail = await LocalStorage.getEmail();
-    final savedPass = await LocalStorage.getPassword();
-    if (savedEmail != null) _emailCtrl.text = savedEmail;
-    if (savedPass != null) _passCtrl.text = savedPass;
+  Future<void> _loadSavedLogin() async {
+    final email = await LocalStorage.getEmail();
+    final pass = await LocalStorage.getPassword();
+    if (email != null) _emailCtrl.text = email;
+    if (pass != null) _passCtrl.text = pass;
   }
 
   Future<void> _login() async {
@@ -43,44 +43,38 @@ class _SignInScreenState extends State<SignInScreen> {
         password: _passCtrl.text.trim(),
       );
 
-      final uid = cred.user!.uid;
-
-      // Salvar UID e email
+      // salva login localmente
       await LocalStorage.saveLogin(
-          uid, _emailCtrl.text.trim(), _passCtrl.text.trim());
+        cred.user!.uid,
+        _emailCtrl.text.trim(),
+        _passCtrl.text.trim(),
+      );
 
-      // Checar dados do usuário no Firebase
-      final ref = FirebaseDatabase.instance.ref('users/$uid');
-      final snapshot = await ref.get();
+      // verifica se há dados do usuário
+      final provider = context.read<UserProvider>();
+      await provider.fetchUserData(cred.user!.uid);
 
-      if (!mounted) return;
-
-      if (snapshot.exists) {
+      if (provider.user == null) {
+        // não há dados → abrir form
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => UserFormScreen(uid: cred.user!.uid),
+          ),
+        );
+      } else {
+        // há dados → abrir detalhe
+        if (!mounted) return;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const UserDetailScreen()),
         );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => UserFormScreen(uid: uid)),
-        );
       }
     } on FirebaseAuthException catch (e) {
-      String msg;
-      switch (e.code) {
-        case 'user-not-found':
-          msg = 'Usuário não encontrado.';
-          break;
-        case 'wrong-password':
-          msg = 'Senha incorreta.';
-          break;
-        case 'invalid-email':
-          msg = 'Email inválido.';
-          break;
-        default:
-          msg = e.message ?? 'Erro ao fazer login.';
-      }
+      String msg = e.message ?? 'Erro ao logar';
+      if (e.code == 'user-not-found') msg = 'Usuário não encontrado';
+      if (e.code == 'wrong-password') msg = 'Senha incorreta';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -103,7 +97,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Informe o email' : null,
               ),
-              const SizedBox(height: 12),
               TextFormField(
                 controller: _passCtrl,
                 obscureText: true,
@@ -118,7 +111,6 @@ class _SignInScreenState extends State<SignInScreen> {
                     ? const CircularProgressIndicator()
                     : const Text('Entrar'),
               ),
-              const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.push(
                   context,
