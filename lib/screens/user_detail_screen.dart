@@ -26,7 +26,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     if (user == null) return;
     final ref = FirebaseDatabase.instance.ref('users/${user!.uid}');
     final snapshot = await ref.get();
-    if (snapshot.exists) {
+    if (snapshot.exists && mounted) {
       setState(() {
         _userData = Map<String, dynamic>.from(snapshot.value as Map);
         _loading = false;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_realtime_app/models/user_model.dart';
+import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 import 'package:flutter_firebase_realtime_app/screens/user_detail_screen.dart';
 import 'package:provider/provider.dart';
-import '../models/user_model.dart';
-import '../providers/user_provider.dart';
-import 'user_data_screen.dart';
+
 
 class UserFormScreen extends StatefulWidget {
   final String uid;
@@ -13,11 +13,33 @@ class UserFormScreen extends StatefulWidget {
   State<UserFormScreen> createState() => _UserFormScreenState();
 }
 
+
 class _UserFormScreenState extends State<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final provider = context.read<UserProvider>();
+      await provider.fetchUserData(widget.uid);
+      final user = provider.user;
+      if (user != null) {
+        _nameController.text = user.name;
+        _phoneController.text = user.phone;
+      }
+    } catch (e) {
+      debugPrint("Erro ao carregar dados do usuário: $e");
+    }
+  }
+
 
   Future<void> _saveUser() async {
     if (!_formKey.currentState!.validate()) return;
