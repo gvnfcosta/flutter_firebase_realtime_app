@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
-import '../utils/local_storage.dart';
-import '../screens/user_form_screen.dart';
-import '../screens/user_detail_screen.dart';
+import '../../providers/user_provider.dart';
+import '../../utils/local_storage.dart';
+import '../../screens/user_form_screen.dart';
+import '../../screens/user_detail_screen.dart';
 
 class AuthService {
   /// 🔹 Carrega o email e senha salvos no armazenamento local

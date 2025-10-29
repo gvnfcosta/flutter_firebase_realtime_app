@@ -1,0 +1,23 @@
+import 'package:flutter/material.dart';
+
+abstract class AppColors {
+  // Backgrounds
+  static final Color scaffoldBackground = Colors.grey.withOpacity(0.1);
+
+  // AppBar
+  static final Color appBarBackground = Colors.green[200]!;
+  static const Color appBarForeground = Colors.black;
+
+  // Text
+  static const Color textPrimary = Colors.black;
+  static const Color textSecondary = Colors.black54;
+
+  // Input
+  static const Color inputBorder = Colors.black;
+  static const Color inputBorderFocused = Colors.black;
+  static const Color inputBorderEnabled = Colors.black54;
+
+  // ColorScheme
+  static const Color primary = Colors.black;
+  static const Color onPrimary = Colors.black;
+}

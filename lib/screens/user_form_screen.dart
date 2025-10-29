@@ -14,7 +14,7 @@ class UserFormScreen extends StatefulWidget {
 class _UserFormScreenState extends State<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   bool _loading = false;
 
   String? _uid;
@@ -38,7 +38,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
       final user = provider.user;
       if (user != null) {
         _nameController.text = user.name;
-        _phoneController.text = user.phone;
+        _emailController.text = user.email;
       }
     } catch (e) {
       debugPrint("Erro ao carregar dados do usuário: $e");
@@ -53,7 +53,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
       final user = UserModel(
         id: _uid!,
         name: _nameController.text.trim(),
-        phone: _phoneController.text.trim(),
+        email: _emailController.text.trim(),
       );
       await context.read<UserProvider>().saveUserData(user);
 
@@ -85,12 +85,12 @@ class _UserFormScreenState extends State<UserFormScreen> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Nome'),
-                validator: (v) => v!.isEmpty ? 'Informe o nome' : null,
+                validator: (v) => v!.isEmpty ? 'Informe seu nome' : null,
               ),
               TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Telefone'),
-                validator: (v) => v!.isEmpty ? 'Informe o telefone' : null,
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+                validator: (v) => v!.isEmpty ? 'Informe seu e-mail' : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(

@@ -97,7 +97,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
             Text('Nome: ${_userData!['name'] ?? ''}',
                 style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 8),
-            Text('Telefone: ${_userData!['phone'] ?? ''}',
+            Text('Email: ${_userData!['email'] ?? ''}',
                 style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 8),
             Text('ID: ${user!.uid}', style: const TextStyle(fontSize: 16)),

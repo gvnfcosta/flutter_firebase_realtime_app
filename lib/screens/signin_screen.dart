@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/services/auth_services.dart';
+import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
 import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 
 class SignInScreen extends StatefulWidget {
