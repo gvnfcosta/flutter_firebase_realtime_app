@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 import 'signin_screen.dart';
-import 'user_form_screen.dart';
 
 class UserDetailScreen extends StatefulWidget {
   const UserDetailScreen({super.key});
@@ -26,37 +26,40 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     if (user == null) return;
     final ref = FirebaseDatabase.instance.ref('users/${user!.uid}');
     final snapshot = await ref.get();
-    if (snapshot.exists && mounted) {
+
+    // Se o usuário ainda não tem dados pessoais, redireciona automaticamente
+    if (!snapshot.exists) {
+      await _redirectToForm();
+      return;
+    }
+
+    if (mounted) {
       setState(() {
         _userData = Map<String, dynamic>.from(snapshot.value as Map);
         _loading = false;
       });
-    } else {
-      // Se não há dados pessoais, direciona para o formulário
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => UserFormScreen(uid: user!.uid)),
-        );
-      }
     }
   }
 
+  Future<void> _redirectToForm() async {
+    if (user == null || !mounted) return;
+
+    // 🔹 Redireciona automaticamente para completar cadastro
+    Navigator.pushNamed(context, '/userForm', arguments: user!.uid);
+  }
+
   Future<void> _logout() async {
+    // 🔹 Limpa credenciais locais (se existir a função)
+    await LocalStorage.removeLogin();
+
+    // 🔹 Sai do Firebase
     await FirebaseAuth.instance.signOut();
+
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const SignInScreen()),
       (route) => false,
-    );
-  }
-
-  Future<void> _editData() async {
-    if (user == null) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => UserFormScreen(uid: user!.uid)),
     );
   }
 
@@ -69,8 +72,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     }
 
     if (_userData == null) {
+      // 🔹 Caso não haja dados, o redirecionamento já ocorre em _loadUserData()
       return const Scaffold(
-        body: Center(child: Text('Nenhum dado encontrado.')),
+        body: Center(child: Text('Redirecionando...')),
       );
     }
 
@@ -98,17 +102,11 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
             const SizedBox(height: 8),
             Text('ID: ${user!.uid}', style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _editData,
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Editar Dados'),
-                ),
-               
-              ],
-            )
+            ElevatedButton.icon(
+              onPressed: () => _redirectToForm(),
+              icon: const Icon(Icons.edit),
+              label: const Text('Editar Dados'),
+            ),
           ],
         ),
       ),

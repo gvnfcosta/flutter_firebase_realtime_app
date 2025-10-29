@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import '../models/user_model.dart';
+import 'package:flutter_firebase_realtime_app/models/user_model.dart';
 
 class UserProvider with ChangeNotifier {
   UserModel? _user;
+
   final dbRef = FirebaseDatabase.instance.ref();
 
   UserModel? get user => _user;
@@ -12,7 +13,11 @@ class UserProvider with ChangeNotifier {
     try {
       final snapshot = await dbRef.child('users/$uid').get();
       if (snapshot.exists) {
-        _user = UserModel.fromMap(snapshot.value as Map);
+        _user = _user = snapshot.exists
+            ? UserModel.fromMap(
+                Map<String, dynamic>.from(snapshot.value as Map))
+            : null;
+        notifyListeners();
       } else {
         _user = null; // usuário ainda sem dados pessoais
       }

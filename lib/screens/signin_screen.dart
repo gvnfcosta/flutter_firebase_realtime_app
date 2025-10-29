@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
-import 'signup_screen.dart';
-import 'user_detail_screen.dart';
-import 'user_form_screen.dart';
-import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
+import 'package:flutter_firebase_realtime_app/services/auth_services.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -21,64 +15,19 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _loading = false;
 
   @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
-    _loadSavedLogin();
-  }
-
-  Future<void> _loadSavedLogin() async {
-    final email = await LocalStorage.getEmail();
-    final pass = await LocalStorage.getPassword();
-    if (email != null) _emailCtrl.text = email;
-    if (pass != null) _passCtrl.text = pass;
-  }
-
-  Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-
-    try {
-      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailCtrl.text.trim(),
-        password: _passCtrl.text.trim(),
-      );
-
-      // salva login localmente
-      await LocalStorage.saveLogin(
-        cred.user!.uid,
-        _emailCtrl.text.trim(),
-        _passCtrl.text.trim(),
-      );
-
-      // verifica se há dados do usuário
-      final provider = context.read<UserProvider>();
-      await provider.fetchUserData(cred.user!.uid);
-
-      if (provider.user == null) {
-        // não há dados → abrir form
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => UserFormScreen(uid: cred.user!.uid),
-          ),
-        );
-      } else {
-        // há dados → abrir detalhe
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const UserDetailScreen()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      String msg = e.message ?? 'Erro ao logar';
-      if (e.code == 'user-not-found') msg = 'Usuário não encontrado';
-      if (e.code == 'wrong-password') msg = 'Senha incorreta';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    AuthService.loadSavedLogin(
+      emailCtrl: _emailCtrl,
+      passCtrl: _passCtrl,
+    );
   }
 
   @override
@@ -106,16 +55,22 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _loading ? null : _login,
+                onPressed: _loading
+                    ? null
+                    : () => AuthService.login(
+                          context: context,
+                          formKey: _formKey,
+                          emailCtrl: _emailCtrl,
+                          passCtrl: _passCtrl,
+                          setLoading: (val) => setState(() => _loading = val),
+                        ),
                 child: _loading
-                    ? const CircularProgressIndicator()
+                    ? const CircularProgressIndicator(strokeWidth: 2)
                     : const Text('Entrar'),
               ),
               TextButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SignUpScreen()),
-                ),
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/signup'),
                 child: const Text('Criar nova conta'),
               ),
             ],

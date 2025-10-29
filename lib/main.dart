@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
-import 'providers/user_provider.dart';
-import 'screens/signin_screen.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
+import 'package:flutter_firebase_realtime_app/screens/signin_screen.dart';
+import 'package:flutter_firebase_realtime_app/screens/signup_screen.dart';
+import 'package:flutter_firebase_realtime_app/screens/user_detail_screen.dart';
+import 'package:flutter_firebase_realtime_app/screens/user_form_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,10 +31,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Firebase Realtime App',
+      title: 'Firebase Realtime App',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const SignInScreen(),
       debugShowCheckedModeBanner: false,
+      initialRoute: '/signin',
+      routes: {
+        '/signin': (_) => const SignInScreen(),
+        '/signup': (_) => const SignUpScreen(),
+        '/userForm': (_) => const UserFormScreen(),
+        '/userDetail': (_) => const UserDetailScreen(),
+      },
     );
   }
 }

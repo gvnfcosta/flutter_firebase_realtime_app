@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/models/user_model.dart';
-import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
-import 'package:flutter_firebase_realtime_app/screens/user_detail_screen.dart';
 import 'package:provider/provider.dart';
 
+import 'package:flutter_firebase_realtime_app/models/user_model.dart';
+import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 
 class UserFormScreen extends StatefulWidget {
-  final String uid;
-  const UserFormScreen({super.key, required this.uid});
+  const UserFormScreen({super.key});
 
   @override
   State<UserFormScreen> createState() => _UserFormScreenState();
 }
-
 
 class _UserFormScreenState extends State<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
@@ -20,16 +17,24 @@ class _UserFormScreenState extends State<UserFormScreen> {
   final _phoneController = TextEditingController();
   bool _loading = false;
 
+  String? _uid;
+
   @override
-  void initState() {
-    super.initState();
-    _loadUserData();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Recupera o argumento passado pela rota nomeada
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      _uid = args;
+      _loadUserData(); // carrega os dados com base no UID
+    }
   }
 
   Future<void> _loadUserData() async {
+    if (_uid == null) return;
     try {
       final provider = context.read<UserProvider>();
-      await provider.fetchUserData(widget.uid);
+      await provider.fetchUserData(_uid!);
       final user = provider.user;
       if (user != null) {
         _nameController.text = user.name;
@@ -40,14 +45,13 @@ class _UserFormScreenState extends State<UserFormScreen> {
     }
   }
 
-
   Future<void> _saveUser() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
     try {
       final user = UserModel(
-        id: widget.uid,
+        id: _uid!,
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
       );
@@ -57,10 +61,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
         const SnackBar(content: Text('Usuário salvo com sucesso!')),
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const UserDetailScreen()),
-      );
+      Navigator.pushReplacementNamed(context, '/userDetail');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar: $e')),

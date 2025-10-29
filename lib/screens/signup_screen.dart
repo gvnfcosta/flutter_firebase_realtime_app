@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
-import 'user_form_screen.dart';
+import 'package:flutter_firebase_realtime_app/services/auth_services.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -16,64 +14,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passCtrl = TextEditingController();
   final _confirmPassCtrl = TextEditingController();
   bool _loading = false;
-
-  Future<void> _signup() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _loading = true);
-    try {
-      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailCtrl.text.trim(),
-        password: _passCtrl.text.trim(),
-      );
-
-      final uid = cred.user?.uid;
-      if (uid == null) {
-        throw Exception('Erro ao recuperar UID do usuário.');
-      }
-
-      // ✅ Salva UID e email localmente (armazenamento persistente)
-      await LocalStorage.saveLogin(
-          uid, _emailCtrl.text.trim(), _passCtrl.text.trim());
-
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Conta criada com sucesso. Complete seu cadastro.')),
-      );
-
-      // ✅ Navega para tela de cadastro de dados pessoais
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => UserFormScreen(uid: uid)),
-      );
-    } on FirebaseAuthException catch (e) {
-      String msg;
-      switch (e.code) {
-        case 'email-already-in-use':
-          msg = 'Este email já está em uso.';
-          break;
-        case 'invalid-email':
-          msg = 'Email inválido.';
-          break;
-        case 'operation-not-allowed':
-          msg = 'Operação não permitida. Verifique a configuração do Auth.';
-          break;
-        case 'weak-password':
-          msg = 'Senha fraca. Use pelo menos 6 caracteres.';
-          break;
-        default:
-          msg = e.message ?? 'Erro ao criar conta.';
-      }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro inesperado: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
 
   @override
   void dispose() {
@@ -96,6 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(labelText: 'Email'),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Informe o email';
@@ -106,11 +47,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passCtrl,
+                textInputAction: TextInputAction.next,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Senha'),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Informe a senha';
-                  if (v.length < 6) return 'Senha deve ter pelo menos 6 caracteres';
+                  if (v.length < 6)
+                    return 'Senha deve ter pelo menos 6 caracteres';
                   return null;
                 },
               ),
@@ -127,14 +70,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _loading ? null : _signup,
+                onPressed: _loading
+                    ? null
+                    : () => AuthService.signUp(
+                          context: context,
+                          formKey: _formKey,
+                          emailCtrl: _emailCtrl,
+                          passCtrl: _passCtrl,
+                          confirmPassCtrl: _confirmPassCtrl,
+                          setLoading: (val) => setState(() => _loading = val),
+                        ),
                 child: _loading
                     ? const CircularProgressIndicator()
                     : const Text('Cadastrar'),
               ),
               const SizedBox(height: 8),
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/signin'),
                 child: const Text('Já tenho conta / Voltar'),
               ),
             ],
