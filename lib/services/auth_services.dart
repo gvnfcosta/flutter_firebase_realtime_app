@@ -132,7 +132,7 @@ class AuthService {
   static Future<void> logout(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
-      // await LocalStorage.removeLogin();
+      await LocalStorage.removeLogin();
 
       if (!context.mounted) return;
 

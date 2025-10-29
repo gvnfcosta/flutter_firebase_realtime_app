@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/services/auth_services.dart';
+import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -13,21 +14,43 @@ class _SignInScreenState extends State<SignInScreen> {
   final _passCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
+  bool _autoTried = false; // evita múltiplas tentativas automáticas
+
+  @override
+  void initState() {
+    super.initState();
+    _initAutoLogin();
+  }
+
+  Future<void> _initAutoLogin() async {
+    // Carrega email e senha do armazenamento local
+    await AuthService.loadSavedLogin(
+      emailCtrl: _emailCtrl,
+      passCtrl: _passCtrl,
+    );
+
+    // Se já há credenciais salvas, tenta login automático
+    if (_emailCtrl.text.isNotEmpty && _passCtrl.text.isNotEmpty) {
+      setState(() {
+        _loading = true;
+        _autoTried = true;
+      });
+
+      await AuthService.login(
+        context: context,
+        formKey: _formKey,
+        emailCtrl: _emailCtrl,
+        passCtrl: _passCtrl,
+        setLoading: (val) => setState(() => _loading = val),
+      );
+    }
+  }
 
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    AuthService.loadSavedLogin(
-      emailCtrl: _emailCtrl,
-      passCtrl: _passCtrl,
-    );
   }
 
   @override
@@ -69,10 +92,16 @@ class _SignInScreenState extends State<SignInScreen> {
                     : const Text('Entrar'),
               ),
               TextButton(
-                onPressed: () =>
-                    Navigator.pushReplacementNamed(context, '/signup'),
+                onPressed: _loading
+                    ? null
+                    : () => Navigator.pushReplacementNamed(context, '/signup'),
                 child: const Text('Criar nova conta'),
               ),
+              if (_loading && !_autoTried)
+                const Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: Text('Tentando login automático...'),
+                ),
             ],
           ),
         ),
