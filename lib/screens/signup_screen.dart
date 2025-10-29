@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -81,13 +82,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           setLoading: (val) => setState(() => _loading = val),
                         ),
                 child: _loading
-                    ? const CircularProgressIndicator()
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Cadastrar'),
               ),
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () =>
-                    Navigator.pushReplacementNamed(context, '/signin'),
+                    Navigator.pushReplacementNamed(context, AppRoutes.signIn),
                 child: const Text('Já tenho conta / Voltar'),
               ),
             ],

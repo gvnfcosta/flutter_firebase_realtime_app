@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:provider/provider.dart';
-
 import 'package:flutter_firebase_realtime_app/models/user_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 
@@ -16,24 +17,34 @@ class _UserFormScreenState extends State<UserFormScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   bool _loading = false;
-
   String? _uid;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
     // Recupera o argumento passado pela rota nomeada
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String) {
+    if (args is String && _uid == null) {
       _uid = args;
-      _loadUserData(); // carrega os dados com base no UID
+      _loadUserData();
     }
   }
 
+  /// Carrega os dados do usuário autenticado, se existirem
   Future<void> _loadUserData() async {
     if (_uid == null) return;
+
+    final provider = context.read<UserProvider>();
+
+    // Evita recarregar dados já disponíveis no provider
+    if (provider.user != null && provider.user!.id == _uid) {
+      _nameController.text = provider.user!.name;
+      _emailController.text = provider.user!.email;
+      return;
+    }
+
     try {
-      final provider = context.read<UserProvider>();
       await provider.fetchUserData(_uid!);
       final user = provider.user;
       if (user != null) {
@@ -42,34 +53,53 @@ class _UserFormScreenState extends State<UserFormScreen> {
       }
     } catch (e) {
       debugPrint("Erro ao carregar dados do usuário: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erro ao carregar dados do usuário.')),
+      );
     }
   }
 
+  /// Salva (ou atualiza) os dados do usuário
   Future<void> _saveUser() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
     try {
       final user = UserModel(
-        id: _uid!,
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-      );
+          id: _uid!,
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          code: getLastChars(_uid ?? ''),
+          level: 2);
+
       await context.read<UserProvider>().saveUserData(user);
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Usuário salvo com sucesso!')),
       );
 
-      Navigator.pushReplacementNamed(context, '/userDetail');
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.userDetail,
+        (route) => false, // 🔹 limpa toda a pilha
+      );
     } catch (e) {
+      debugPrint("Erro ao salvar usuário: $e");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao salvar: $e')),
       );
-      debugPrint("Erro ao salvar usuário: $e");
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
   }
 
   @override
@@ -84,20 +114,35 @@ class _UserFormScreenState extends State<UserFormScreen> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Nome'),
+                decoration: const InputDecoration(
+                  labelText: 'Nome',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (v) => v!.isEmpty ? 'Informe seu nome' : null,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (v) => v!.isEmpty ? 'Informe seu e-mail' : null,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _loading ? null : _saveUser,
-                child: _loading
-                    ? const CircularProgressIndicator()
-                    : const Text('Salvar'),
+              const SizedBox(height: 60),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _loading ? null : _saveUser,
+                  icon: _loading
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.save),
+                  label: Text(_loading ? 'Salvando...' : 'Salvar'),
+                ),
               ),
             ],
           ),

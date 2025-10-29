@@ -17,6 +17,17 @@ final ThemeData appTheme = ThemeData(
     primary: AppColors.primary,
     onPrimary: AppColors.onPrimary,
   ),
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      minimumSize: const Size(double.infinity, 48),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      backgroundColor: AppColors.backGroundButton,
+      foregroundColor: AppColors.foregroundButton,
+      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    ),
+  ),
   inputDecorationTheme: const InputDecorationTheme(
     border: UnderlineInputBorder(
       borderSide: BorderSide(color: AppColors.inputBorder),
@@ -29,5 +40,10 @@ final ThemeData appTheme = ThemeData(
     ),
     labelStyle: TextStyle(color: AppColors.textPrimary),
     hintStyle: TextStyle(color: AppColors.textSecondary),
+  ),
+  snackBarTheme: const SnackBarThemeData(
+    backgroundColor: Colors.indigo,
+    contentTextStyle: TextStyle(color: Colors.white),
+    behavior: SnackBarBehavior.floating,
   ),
 );

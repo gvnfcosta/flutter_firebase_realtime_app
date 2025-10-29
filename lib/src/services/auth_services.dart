@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
+import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart';
-import '../../utils/local_storage.dart';
-import '../../screens/user_form_screen.dart';
-import '../../screens/user_detail_screen.dart';
 
 class AuthService {
-  /// 🔹 Carrega o email e senha salvos no armazenamento local
+  /// Carrega o email e senha salvos no armazenamento local
   static Future<void> loadSavedLogin({
     required TextEditingController emailCtrl,
     required TextEditingController passCtrl,
@@ -19,7 +18,7 @@ class AuthService {
     if (pass != null) passCtrl.text = pass;
   }
 
-  /// 🔹 Realiza login e redireciona conforme status do usuário
+  /// Realiza login e redireciona conforme status do usuário
   static Future<void> login({
     required BuildContext context,
     required GlobalKey<FormState> formKey,
@@ -45,13 +44,19 @@ class AuthService {
       final provider = context.read<UserProvider>();
       await provider.fetchUserData(cred.user!.uid);
 
+      final currentUid = cred.user!.uid;
+
       if (provider.user == null) {
         if (!context.mounted) return;
-        Navigator.pushReplacementNamed(context, '/userForm',
-            arguments: cred.user!.uid);
+        Navigator.pushReplacementNamed(context, AppRoutes.userForm,
+            arguments: currentUid);
       } else {
         if (!context.mounted) return;
-        Navigator.pushReplacementNamed(context, '/userDetail');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.userDetail,
+          (route) => false,
+        );
       }
     } on FirebaseAuthException catch (e) {
       String msg = e.message ?? 'Erro ao logar';
@@ -63,7 +68,7 @@ class AuthService {
     }
   }
 
-  /// 🔹 Cria uma nova conta de usuário e navega para o formulário de perfil
+  /// Cria uma nova conta de usuário e navega para o formulário de perfil
   static Future<void> signUp({
     required BuildContext context,
     required GlobalKey<FormState> formKey,
@@ -98,7 +103,7 @@ class AuthService {
         ),
       );
 
-      Navigator.pushReplacementNamed(context, '/userForm',
+      Navigator.pushReplacementNamed(context, AppRoutes.userForm,
           arguments: cred.user!.uid);
     } on FirebaseAuthException catch (e) {
       String msg;
@@ -128,7 +133,7 @@ class AuthService {
     }
   }
 
-  /// 🔹 Faz logout e limpa dados locais
+  /// Faz logout e limpa dados locais
   static Future<void> logout(BuildContext context) async {
     try {
       await FirebaseAuth.instance.signOut();
@@ -141,7 +146,8 @@ class AuthService {
       );
 
       // Retorna à tela inicial de login
-      Navigator.pushNamedAndRemoveUntil(context, '/signin', (r) => false);
+      Navigator.pushNamedAndRemoveUntil(
+          context, AppRoutes.signIn, (r) => false);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao sair: $e')),

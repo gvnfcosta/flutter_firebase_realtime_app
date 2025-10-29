@@ -8,9 +8,13 @@ import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint("Erro ao inicializar Firebase: $e");
+  }
 
   runApp(
     MultiProvider(

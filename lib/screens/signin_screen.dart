@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
-import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -94,7 +94,8 @@ class _SignInScreenState extends State<SignInScreen> {
               TextButton(
                 onPressed: _loading
                     ? null
-                    : () => Navigator.pushReplacementNamed(context, '/signup'),
+                    : () => Navigator.pushReplacementNamed(
+                        context, AppRoutes.signUp),
                 child: const Text('Criar nova conta'),
               ),
               if (_loading && !_autoTried)
