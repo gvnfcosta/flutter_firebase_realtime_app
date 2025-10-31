@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
+import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_firebase_realtime_app/models/user_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 
 class UserFormScreen extends StatefulWidget {
-  const UserFormScreen({super.key});
+  final String uid;
+  const UserFormScreen({super.key, required this.uid});
 
   @override
   State<UserFormScreen> createState() => _UserFormScreenState();
@@ -17,7 +19,14 @@ class _UserFormScreenState extends State<UserFormScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   bool _loading = false;
-  String? _uid;
+  late final String _uid;
+
+  @override
+  void initState() {
+    super.initState();
+    _uid = widget.uid; // agora temos o UID garantido
+    _loadUserData();
+  }
 
   @override
   void didChangeDependencies() {
@@ -25,7 +34,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
     // Recupera o argumento passado pela rota nomeada
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String && _uid == null) {
+    if (args is String) {
       _uid = args;
       _loadUserData();
     }
@@ -33,8 +42,6 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
   /// Carrega os dados do usuário autenticado, se existirem
   Future<void> _loadUserData() async {
-    if (_uid == null) return;
-
     final provider = context.read<UserProvider>();
 
     // Evita recarregar dados já disponíveis no provider
@@ -127,7 +134,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                   labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => v!.isEmpty ? 'Informe seu e-mail' : null,
+                validator: (v) => emailValidator(v),
               ),
               const SizedBox(height: 60),
               SizedBox(

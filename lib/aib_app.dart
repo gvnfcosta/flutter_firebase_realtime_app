@@ -1,6 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/auth_wrapper.dart';
+import 'package:flutter_firebase_realtime_app/screens/splash_screen.dart';
 
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/screens/signin_screen.dart';
@@ -15,17 +15,51 @@ class AibApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Firebase Realtime App',
-      debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.wrapper, // nova rota wrapper
-      theme: appTheme,
-      routes: {
-        AppRoutes.wrapper: (_) => const AuthWrapper(),
-        AppRoutes.signIn: (_) => const SignInScreen(),
-        AppRoutes.signUp: (_) => const SignUpScreen(),
-        AppRoutes.userForm: (_) => const UserFormScreen(),
-        AppRoutes.userDetail: (_) => const UserDetailScreen(),
-      },
-    );
+        title: 'Firebase Realtime App',
+        debugShowCheckedModeBanner: false,
+        initialRoute: AppRoutes.splash, // Agora começa no splash
+        theme: appTheme,
+        onGenerateRoute: (settings) {
+          switch (settings.name) {
+            case AppRoutes.splash:
+              return MaterialPageRoute(
+                builder: (_) => const SplashScreen(),
+              );
+
+            case AppRoutes.wrapper:
+              return MaterialPageRoute(
+                builder: (_) => const AuthWrapper(),
+              );
+
+            case AppRoutes.signIn:
+              return MaterialPageRoute(
+                builder: (_) => const SignInScreen(),
+              );
+
+            case AppRoutes.signUp:
+              return MaterialPageRoute(
+                builder: (_) => const SignUpScreen(),
+              );
+
+            case AppRoutes.userForm:
+              final uid = settings.arguments as String?;
+              if (uid == null) {
+                throw Exception('UID obrigatório para UserFormScreen');
+              }
+              return MaterialPageRoute(
+                builder: (_) => UserFormScreen(uid: uid),
+              );
+
+            case AppRoutes.userDetail:
+              return MaterialPageRoute(
+                builder: (_) => const UserDetailScreen(),
+              );
+
+            default:
+              return MaterialPageRoute(
+                builder: (_) => const SplashScreen(),
+              );
+          }
+        });
   }
 }

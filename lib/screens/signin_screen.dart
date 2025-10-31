@@ -13,37 +13,21 @@ class _SignInScreenState extends State<SignInScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  final bool _autoTried = false; // evita múltiplas tentativas automáticas
   bool _loading = false;
-  bool _autoTried = false; // evita múltiplas tentativas automáticas
 
   @override
   void initState() {
     super.initState();
-    _initAutoLogin();
-  }
-
-  Future<void> _initAutoLogin() async {
-    // Carrega email e senha do armazenamento local
-    await AuthService.loadSavedLogin(
-      emailCtrl: _emailCtrl,
-      passCtrl: _passCtrl,
-    );
-
-    // Se já há credenciais salvas, tenta login automático
-    if (_emailCtrl.text.isNotEmpty && _passCtrl.text.isNotEmpty) {
-      setState(() {
-        _loading = true;
-        _autoTried = true;
-      });
-
-      await AuthService.login(
+    Future.microtask(() async {
+      await AuthService.autoLogin(
         context: context,
-        formKey: _formKey,
         emailCtrl: _emailCtrl,
         passCtrl: _passCtrl,
         setLoading: (val) => setState(() => _loading = val),
       );
-    }
+    });
   }
 
   @override
