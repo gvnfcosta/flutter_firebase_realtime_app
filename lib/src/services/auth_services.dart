@@ -61,6 +61,8 @@ class AuthService {
         passCtrl.text.trim(),
       );
 
+      if (!context.mounted) return;
+
       final provider = context.read<UserProvider>();
       await provider.fetchUserData(cred.user!.uid);
 

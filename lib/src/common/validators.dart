@@ -10,13 +10,27 @@ String? emailValidator(String? email) {
   return null;
 }
 
-String? passwordValidator(password) {
+String? passwordValidator(String? password) {
   if (password == null || password.isEmpty) {
     return 'Digite sua senha!';
   }
 
-  if (password.length < 7) {
-    return 'Digite uma senha com pelos menos 7 caracteres.';
+  if (password.length < 6) {
+    return 'Digite uma senha com pelos menos 6 caracteres.';
+  }
+
+  return null;
+}
+
+String? matchPasswordValidator(String? password, String? matchPassword) {
+  if (password == null || password.isEmpty) {
+    return 'Digite sua senha!';
+  }
+
+  if (matchPassword != password) return 'As senhas não coincidem';
+
+  if (password.length < 6) {
+    return 'Digite uma senha com pelos menos 6 caracteres.';
   }
 
   return null;

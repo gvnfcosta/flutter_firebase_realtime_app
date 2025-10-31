@@ -60,6 +60,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
       }
     } catch (e) {
       debugPrint("Erro ao carregar dados do usuário: $e");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao carregar dados do usuário.')),
       );
@@ -76,8 +77,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
           id: _uid!,
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          code: getLastChars(_uid ?? ''),
-          level: 2);
+          code: getLastChars(_uid),
+          level: 0);
 
       await context.read<UserProvider>().saveUserData(user);
 

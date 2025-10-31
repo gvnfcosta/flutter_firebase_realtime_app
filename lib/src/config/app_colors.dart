@@ -17,6 +17,9 @@ abstract class AppColors {
   static const Color inputBorderFocused = Colors.black;
   static const Color inputBorderEnabled = Colors.black54;
 
+  // Icon
+  static final Color foregroundIcon = Colors.green[300]!;
+
   // Button
   static const Color backGroundButton = Colors.green;
   static const Color foregroundButton = Colors.white;
