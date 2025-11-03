@@ -13,16 +13,39 @@ class AuthService {
     return result != ConnectivityResult.none;
   }
 
-  /// Carrega o email e senha salvos no armazenamento local
+  /// 🔹 Carrega o email e senha salvos
   static Future<void> loadSavedLogin({
     required TextEditingController emailCtrl,
     required TextEditingController passCtrl,
   }) async {
     final email = await LocalStorage.getEmail();
     final pass = await LocalStorage.getPassword();
-
     if (email != null) emailCtrl.text = email;
     if (pass != null) passCtrl.text = pass;
+  }
+
+  /// 🔹 Fluxo pós-login centralizado
+  static Future<void> _handlePostLogin(
+      BuildContext context, UserCredential cred) async {
+    final uid = cred.user!.uid;
+    final provider = context.read<UserProvider>();
+    await provider.fetchUserData(uid);
+
+    if (!context.mounted) return;
+
+    if (provider.user == null) {
+      Navigator.pushReplacementNamed(
+        context,
+        AppRoutes.userForm,
+        arguments: uid,
+      );
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.userDetail,
+        (route) => false,
+      );
+    }
   }
 
   /// 🔹 Login Automático
@@ -34,22 +57,17 @@ class AuthService {
   }) async {
     try {
       await loadSavedLogin(emailCtrl: emailCtrl, passCtrl: passCtrl);
-
       if (emailCtrl.text.isEmpty || passCtrl.text.isEmpty) return;
 
-      // ✅ Verifica conexão
       final connected = await hasInternet();
       if (!connected) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Sem conexão com a internet.')),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sem conexão com a internet.')),
+        );
         return;
       }
 
       setLoading(true);
-
       final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailCtrl.text.trim(),
         password: passCtrl.text.trim(),
@@ -61,28 +79,7 @@ class AuthService {
         passCtrl.text.trim(),
       );
 
-      if (!context.mounted) return;
-
-      final provider = context.read<UserProvider>();
-      await provider.fetchUserData(cred.user!.uid);
-
-      final currentUid = cred.user!.uid;
-
-      if (!context.mounted) return;
-
-      if (provider.user == null) {
-        Navigator.pushReplacementNamed(
-          context,
-          AppRoutes.userForm,
-          arguments: currentUid,
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.userDetail,
-          (route) => false,
-        );
-      }
+      await _handlePostLogin(context, cred);
     } on FirebaseAuthException catch (e) {
       String msg;
       switch (e.code) {
@@ -90,19 +87,14 @@ class AuthService {
           msg = 'Falha de conexão. Verifique sua internet.';
           break;
         case 'user-not-found':
-          msg = 'Usuário não encontrado.';
-          break;
         case 'wrong-password':
-          msg = 'Senha incorreta.';
+          await LocalStorage.removeLogin();
+          msg = 'Credenciais inválidas. Faça login novamente.';
           break;
         default:
           msg = e.message ?? 'Erro ao fazer login automático.';
       }
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg)));
-      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     } catch (e) {
       debugPrint('Erro no autoLogin: $e');
     } finally {
@@ -120,7 +112,6 @@ class AuthService {
   }) async {
     if (!formKey.currentState!.validate()) return;
 
-    // ✅ Verifica conexão
     final connected = await hasInternet();
     if (!connected) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,37 +133,17 @@ class AuthService {
         passCtrl.text.trim(),
       );
 
-      final provider = context.read<UserProvider>();
-      await provider.fetchUserData(cred.user!.uid);
-
-      final currentUid = cred.user!.uid;
-
-      if (!context.mounted) return;
-
-      if (provider.user == null) {
-        Navigator.pushReplacementNamed(
-          context,
-          AppRoutes.userForm,
-          arguments: currentUid,
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.userDetail,
-          (route) => false,
-        );
-      }
+      await _handlePostLogin(context, cred);
     } on FirebaseAuthException catch (e) {
       String msg;
       switch (e.code) {
         case 'network-request-failed':
-          msg = 'Falha de conexão. Verifique sua internet.';
+          msg = 'Falha de conexão.';
           break;
         case 'user-not-found':
-          msg = 'Usuário não encontrado.';
-          break;
         case 'wrong-password':
-          msg = 'Senha incorreta.';
+          await LocalStorage.removeLogin();
+          msg = 'Usuário ou senha incorretos.';
           break;
         default:
           msg = e.message ?? 'Erro ao logar.';
@@ -183,7 +154,7 @@ class AuthService {
     }
   }
 
-  /// 🔹 Cadastro de usuário
+  /// 🔹 Cadastro
   static Future<void> signUp({
     required BuildContext context,
     required GlobalKey<FormState> formKey,
@@ -194,7 +165,6 @@ class AuthService {
   }) async {
     if (!formKey.currentState!.validate()) return;
 
-    // ✅ Verifica conexão
     final connected = await hasInternet();
     if (!connected) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -211,40 +181,25 @@ class AuthService {
       );
 
       final uid = cred.user?.uid;
-      if (uid == null) throw Exception('Erro ao recuperar UID do usuário.');
+      if (uid == null) throw Exception('Erro ao recuperar UID.');
 
       await LocalStorage.saveLogin(
-        uid,
-        emailCtrl.text.trim(),
-        passCtrl.text.trim(),
-      );
+          uid, emailCtrl.text.trim(), passCtrl.text.trim());
 
-      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Conta criada com sucesso. Complete seu cadastro.'),
-        ),
+        const SnackBar(content: Text('Conta criada. Complete seu cadastro.')),
       );
 
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.userForm,
-        arguments: cred.user!.uid,
+        arguments: uid,
       );
     } on FirebaseAuthException catch (e) {
       String msg;
       switch (e.code) {
-        case 'network-request-failed':
-          msg = 'Falha de conexão. Verifique sua internet.';
-          break;
         case 'email-already-in-use':
-          msg = 'Este email já está em uso.';
-          break;
-        case 'invalid-email':
-          msg = 'Email inválido.';
-          break;
-        case 'operation-not-allowed':
-          msg = 'Operação não permitida. Verifique a configuração do Auth.';
+          msg = 'Email já está em uso.';
           break;
         case 'weak-password':
           msg = 'Senha fraca. Use pelo menos 6 caracteres.';
@@ -253,34 +208,21 @@ class AuthService {
           msg = e.message ?? 'Erro ao criar conta.';
       }
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro inesperado: $e')),
-      );
     } finally {
       if (context.mounted) setLoading(false);
     }
   }
 
-  /// 🔹 Logout
+  /// 🔹 Logout (sem exigir internet)
   static Future<void> logout(BuildContext context) async {
     try {
-      // ✅ Verifica conexão (só se quiser garantir o signOut remoto)
-      final connected = await hasInternet();
-      if (!connected) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sem conexão. Não foi possível sair.')),
-        );
-        return;
-      }
-
       await FirebaseAuth.instance.signOut();
       await LocalStorage.removeLogin();
 
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sessão encerrada com sucesso.')),
+        const SnackBar(content: Text('Sessão encerrada.')),
       );
 
       Navigator.pushNamedAndRemoveUntil(
@@ -289,9 +231,8 @@ class AuthService {
         (r) => false,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao sair: $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Erro ao sair: $e')));
     }
   }
 }

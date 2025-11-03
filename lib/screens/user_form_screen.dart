@@ -52,7 +52,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
     }
 
     try {
-      await provider.fetchUserData(_uid!);
+      await provider.fetchUserData(_uid);
       final user = provider.user;
       if (user != null) {
         _nameController.text = user.name;
@@ -74,10 +74,11 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
     try {
       final user = UserModel(
-          id: _uid!,
+          id: _uid,
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           code: getLastChars(_uid),
+          logoUrl: '',
           level: 0);
 
       await context.read<UserProvider>().saveUserData(user);

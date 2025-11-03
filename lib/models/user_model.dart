@@ -1,36 +1,37 @@
-class UserModel {
-  final String id;
-  final String name;
-  final String email;
+import 'person_model.dart';
+
+class UserModel extends PersonModel {
   final String code;
+  final String logoUrl;
   final int level;
 
   UserModel({
-    required this.id,
-    required this.name,
-    required this.email,
+    required super.id,
+    required super.name,
+    required super.email,
     required this.code,
+    required this.logoUrl,
     required this.level,
   });
 
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'name': name,
-        'email': email,
-        'code': code,
-        'level': level,
-      };
+  @override
+  Map<String, dynamic> toMap() {
+    return {
+      ...super.toMap(),
+      'code': code,
+      'logoUrl': logoUrl,
+      'level': level,
+    };
+  }
 
-  factory UserModel.fromMap(Map<dynamic, dynamic>? map) {
-    if (map == null) throw Exception("Dados do usuário inexistentes");
+  factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       code: map['code'] ?? '',
-      level: map['level'] is int
-          ? map['level']
-          : int.tryParse(map['level'].toString()) ?? 1,
+      logoUrl: map['logoUrl'] ?? '',
+      level: map['level'] ?? '',
     );
   }
 
