@@ -5,14 +5,14 @@ import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 
-class UserDetailScreen extends StatefulWidget {
-  const UserDetailScreen({super.key});
+class UserTab extends StatefulWidget {
+  const UserTab({super.key});
 
   @override
-  State<UserDetailScreen> createState() => _UserDetailScreenState();
+  State<UserTab> createState() => _UserTabState();
 }
 
-class _UserDetailScreenState extends State<UserDetailScreen> {
+class _UserTabState extends State<UserTab> {
   Map<String, dynamic>? _userData;
   bool _loading = true;
 
@@ -60,8 +60,9 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     await FirebaseAuth.instance.signOut();
 
     if (!mounted) return;
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil(AppRoutes.signIn, (_) => false);
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.signIn, (_) => false);
   }
 
   @override
@@ -69,21 +70,18 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     final userInfo = context.watch<UserProvider>().user;
 
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_userData == null) {
-      return const Scaffold(
-        body: Center(child: Text('Redirecionando...')),
-      );
+      return const Scaffold(body: Center(child: Text('Redirecionando...')));
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-            'Bem-vindo, ${userInfo?.name ?? ''} (${userInfo?.role ?? ''})'),
+          'Bem-vindo, ${userInfo?.name ?? ''} (${userInfo?.role ?? ''})',
+        ),
         actions: [
           IconButton(
             onPressed: _logout,
@@ -97,20 +95,30 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Nome: ${_userData?['name'] ?? ''}',
-                style: const TextStyle(fontSize: 18)),
+            Text(
+              'Nome: ${_userData?['name'] ?? ''}',
+              style: const TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 8),
-            Text('E-mail: ${_userData?['email'] ?? ''}',
-                style: const TextStyle(fontSize: 18)),
+            Text(
+              'E-mail: ${_userData?['email'] ?? ''}',
+              style: const TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 8),
-            Text('ID: ${FirebaseAuth.instance.currentUser?.uid ?? ''}',
-                style: const TextStyle(fontSize: 16)),
+            Text(
+              'ID: ${FirebaseAuth.instance.currentUser?.uid ?? ''}',
+              style: const TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 8),
-            Text('Code: ${_userData?['code'] ?? ''}',
-                style: const TextStyle(fontSize: 16)),
+            Text(
+              'Code: ${_userData?['code'] ?? ''}',
+              style: const TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 8),
-            Text('Nível: ${_userData?['level'] ?? ''}',
-                style: const TextStyle(fontSize: 16)),
+            Text(
+              'Nível: ${_userData?['level'] ?? ''}',
+              style: const TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 60),
             ElevatedButton.icon(
               onPressed: _goToUserForm,

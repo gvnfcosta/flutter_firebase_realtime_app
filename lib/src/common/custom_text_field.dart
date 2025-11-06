@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 
-class CustomTextFormField extends StatelessWidget {
+class CustomTextFormField extends StatefulWidget {
   final IconData icon;
   final Color? iconColor;
   final String label;
@@ -14,6 +14,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextEditingController? controller;
   final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
   final VoidCallback? onTap;
   final void Function(String)? onChanged;
 
@@ -30,55 +31,81 @@ class CustomTextFormField extends StatelessWidget {
     this.validator,
     this.controller,
     this.keyboardType,
+    this.textInputAction = TextInputAction.next,
     this.onTap,
     this.onChanged,
   });
 
   @override
+  State<CustomTextFormField> createState() => _CustomTextFormFieldState();
+}
+
+class _CustomTextFormFieldState extends State<CustomTextFormField> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  late final ValueNotifier<bool> _isObscure;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = widget.controller ??
+        TextEditingController(text: widget.initialValue ?? '');
+    _focusNode = FocusNode();
+    _isObscure = ValueNotifier(widget.obscureText);
+
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller == null) _controller.dispose();
+    _focusNode.dispose();
+    _isObscure.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isObscure = ValueNotifier<bool>(obscureText);
-    final focusNode = FocusNode();
-
-    // Initialize controller with initialValue if provided and no controller is set
-    final effectiveController =
-        controller ?? TextEditingController(text: initialValue);
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ValueListenableBuilder<bool>(
-        valueListenable: isObscure,
+        valueListenable: _isObscure,
         builder: (context, value, _) {
-          debugPrint(
-            'CustomTextField: effectiveController.text = ${effectiveController.text}',
-          );
           return TextFormField(
-            controller: effectiveController,
-            focusNode: focusNode,
-            readOnly: readOnly,
+            controller: _controller,
+            focusNode: _focusNode,
+            readOnly: widget.readOnly,
             style: const TextStyle(fontSize: 14, color: Colors.black87),
-            inputFormatters: inputFormatters,
+            inputFormatters: widget.inputFormatters,
             obscureText: value,
-            validator: validator,
-            keyboardType: keyboardType,
-            onTap: onTap,
-            onChanged: onChanged,
+            validator: widget.validator,
+            keyboardType: widget.keyboardType,
+            textInputAction: widget.textInputAction,
+            onTap: widget.onTap,
+            onChanged: widget.onChanged,
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, size: 22, color: AppColors.foregroundIcon),
-              suffixIcon: obscureText
+              prefixIcon: Icon(
+                widget.icon,
+                size: 22,
+                color: widget.iconColor ?? AppColors.foregroundIcon,
+              ),
+              suffixIcon: widget.obscureText
                   ? IconButton(
                       onPressed: () {
-                        isObscure.value = !isObscure.value;
+                        _isObscure.value = !_isObscure.value;
                       },
                       icon: Icon(
                         value ? Icons.visibility : Icons.visibility_off,
-                        color: iconColor ?? AppColors.foregroundIcon,
+                        color: widget.iconColor ?? AppColors.foregroundIcon,
                         size: 32,
                       ),
                     )
                   : null,
-              labelText: label,
+              labelText: widget.label,
               labelStyle: TextStyle(
-                color: focusNode.hasFocus ? AppColors.primary : Colors.grey,
+                color: _focusNode.hasFocus
+                    ? AppColors.primary
+                    : Colors.grey.shade600,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -90,7 +117,7 @@ class CustomTextFormField extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey.shade400, width: 2),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),

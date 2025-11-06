@@ -1,49 +1,107 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
+
+final ColorScheme _colorScheme = ColorScheme.fromSeed(
+  seedColor: const Color(0xFF2E7D32), // verde principal
+  primary: const Color(0xFF2E7D32), // verde escuro
+  secondary: const Color(0xFF81C784), // verde claro
+  tertiary: const Color(0xFF4CAF50), // intermediário
+  surface: Colors.white,
+  onPrimary: Colors.white,
+  onSecondary: Colors.black87,
+  onSurface: Colors.black87,
+  brightness: Brightness.light,
+);
 
 final ThemeData appTheme = ThemeData(
-  scaffoldBackgroundColor: AppColors.scaffoldBackground,
+  useMaterial3: true,
+  colorScheme: _colorScheme,
+  scaffoldBackgroundColor: _colorScheme.surface,
+
+  // 🔹 Estilo geral do AppBar
   appBarTheme: AppBarTheme(
-    backgroundColor: AppColors.appBarBackground,
-    foregroundColor: AppColors.appBarForeground,
-    elevation: 0,
+    backgroundColor: _colorScheme.primary,
+    foregroundColor: _colorScheme.onPrimary,
+    elevation: 1,
+    titleTextStyle: const TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    ),
+    iconTheme: const IconThemeData(color: Colors.white),
   ),
-  textTheme: const TextTheme(
-    bodyLarge: TextStyle(color: AppColors.textPrimary),
-    bodyMedium: TextStyle(color: AppColors.textPrimary),
-    titleLarge: TextStyle(color: AppColors.textPrimary),
-  ),
-  colorScheme: ColorScheme.fromSwatch().copyWith(
-    primary: AppColors.primary,
-    onPrimary: AppColors.onPrimary,
-  ),
+
+  // 🔹 Botões padronizados
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      minimumSize: const Size(double.infinity, 48),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+      backgroundColor: _colorScheme.primary,
+      foregroundColor: _colorScheme.onPrimary,
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      textStyle: const TextStyle(fontWeight: FontWeight.w600),
+      elevation: 3,
+    ),
+  ),
+
+  outlinedButtonTheme: OutlinedButtonThemeData(
+    style: OutlinedButton.styleFrom(
+      foregroundColor: _colorScheme.primary,
+      side: BorderSide(color: _colorScheme.primary, width: 1.4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  ),
+
+  // 🔹 Campos de texto
+  inputDecorationTheme: InputDecorationTheme(
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(
+        color: _colorScheme.primary.withValues(alpha: 0.4),
       ),
-      backgroundColor: AppColors.backGroundButton,
-      foregroundColor: AppColors.foregroundButton,
-      textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: _colorScheme.primary, width: 1.5),
+    ),
+    labelStyle: TextStyle(color: _colorScheme.primary),
+    prefixIconColor: _colorScheme.primary,
   ),
-  inputDecorationTheme: const InputDecorationTheme(
-    border: UnderlineInputBorder(
-      borderSide: BorderSide(color: AppColors.inputBorder),
-    ),
-    enabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: AppColors.inputBorderEnabled),
-    ),
-    focusedBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: AppColors.inputBorderFocused, width: 2),
-    ),
-    labelStyle: TextStyle(color: AppColors.textPrimary),
-    hintStyle: TextStyle(color: AppColors.textSecondary),
+
+  // 🔹 Cartões e superfícies
+  cardTheme: CardThemeData(
+    color: Colors.white,
+    elevation: 3,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    shadowColor: _colorScheme.primary.withValues(alpha: 0.2),
+    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
   ),
-  snackBarTheme: const SnackBarThemeData(
-    backgroundColor: Colors.indigo,
-    contentTextStyle: TextStyle(color: Colors.white),
+
+  // 🔹 Texto
+  textTheme: const TextTheme(
+    headlineMedium: TextStyle(
+      fontSize: 26,
+      fontWeight: FontWeight.bold,
+      color: Color(0xFF1B5E20),
+    ),
+    titleMedium: TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF2E7D32),
+    ),
+    bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
+    bodyMedium: TextStyle(fontSize: 15, color: Colors.black54),
+  ),
+
+  // 🔹 Cores dos ícones
+  iconTheme: IconThemeData(color: _colorScheme.primary),
+
+  // 🔹 SnackBar e Dialogs
+  snackBarTheme: SnackBarThemeData(
+    backgroundColor: _colorScheme.primary,
+    contentTextStyle: TextStyle(color: _colorScheme.onPrimary),
     behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
   ),
 );

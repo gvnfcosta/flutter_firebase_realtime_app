@@ -1,9 +1,11 @@
 class AppRoutes {
-  AppRoutes._(); // Construtor privado para não instanciar
+  AppRoutes._();
   static const splash = '/';
-  static const wrapper = '/authWrapper';
+  static const home = '/home';
   static const signIn = '/signin';
   static const signUp = '/signup';
-  static const userForm = '/userForm';
-  static const userDetail = '/userDetail';
+  static const userForm = '/user-form';
+  static const userDetail = '/user-detail';
+  static const clientForm = '/client-form';
+  static const clientDetail = '/client-detail';
 }

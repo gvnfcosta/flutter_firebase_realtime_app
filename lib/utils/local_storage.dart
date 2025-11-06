@@ -10,7 +10,7 @@ class LocalStorage {
   static Future<void> saveLogin(String uid, String email,
       [String? password]) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs
+    prefs
       ..setString(_keyUid, uid)
       ..setString(_keyEmail, email);
     if (password != null && password.isNotEmpty) {

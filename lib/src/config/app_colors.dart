@@ -25,6 +25,7 @@ abstract class AppColors {
   static const Color foregroundButton = Colors.white;
 
   // ColorScheme
-  static const Color primary = Colors.black;
+  static const Color primary = Colors.grey;
+  static final Color secondary = Colors.teal.shade900;
   static const Color onPrimary = Colors.black;
 }
