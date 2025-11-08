@@ -173,7 +173,7 @@ class _SignInScreenState extends State<SignInScreen> {
       tag: 'app_logo',
       child: ClipOval(
         child: Image.asset(
-          'assets/images/logo.jpg',
+          'assets/images/Logo.jpg',
           height: logoSize,
           width: logoSize,
           fit: BoxFit.cover,

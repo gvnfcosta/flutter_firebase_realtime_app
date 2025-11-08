@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_firebase_realtime_app/client_app.dart';
 import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,6 +12,12 @@ import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeFirebase();
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: AppColors.appBarBackground, // use a cor que desejar
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
 
   runApp(
     MultiProvider(
