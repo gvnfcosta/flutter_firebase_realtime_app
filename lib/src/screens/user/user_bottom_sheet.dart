@@ -82,9 +82,9 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
       await context.read<UserProvider>().saveUserData(user);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados atualizados com sucesso!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Dados atualizados!')));
 
       Navigator.pop(context);
     } catch (e) {

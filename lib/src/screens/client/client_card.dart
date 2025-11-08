@@ -31,28 +31,43 @@ class ClientCard extends StatelessWidget {
               highlightColor: Colors.transparent,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-                child: Column(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Ícone pessoa
-                    Icon(Icons.business, color: AppColors.secondary, size: 38),
+                    // Ícone ilustrativo
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.business,
+                        size: 28,
+                        color: Colors.blueGrey,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
 
                     // Nome do cliente
-                    SizedBox(
-                      width: 100,
+                    Expanded(
                       child: Text(
                         capitalize(client.name),
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.start,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                           height: 1.2,
                         ),
                       ),
                     ),
+                    const Icon(Icons.chevron_right_rounded, color: Colors.grey),
                   ],
                 ),
               ),

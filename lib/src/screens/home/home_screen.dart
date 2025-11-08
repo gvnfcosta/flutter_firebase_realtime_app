@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (userProvider == null || user == null) {
       // Provider ainda não inicializado ou dados do usuário não carregados
-      return const Scaffold(body: Center(child: CustomProgessIndicator()));
+      return const Scaffold(body: Center(child: CustomProgressIndicator()));
     }
 
     // 🔹 Define abas

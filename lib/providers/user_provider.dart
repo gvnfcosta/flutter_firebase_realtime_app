@@ -10,13 +10,20 @@ class UserProvider with ChangeNotifier {
 
   UserModel? get user => _user;
 
+  void setUser(UserModel user) {
+    _user = user;
+    notifyListeners();
+  }
+
   // Busca os dados do usuário autenticado
-  Future<void> fetchUserData(String uid) async {
+  // Busca os dados do usuário autenticado
+  Future<UserModel?> fetchUserData(String uid) async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
 
     if (currentUid == null || uid != currentUid) {
       throw Exception(
-          "Acesso negado: UID não corresponde ao usuário autenticado");
+        "Acesso negado: UID não corresponde ao usuário autenticado",
+      );
     }
 
     try {
@@ -27,10 +34,12 @@ class UserProvider with ChangeNotifier {
           : null;
 
       notifyListeners();
+      return _user; // ✅ retorna o modelo
     } catch (e) {
       debugPrint("Erro ao buscar dados do usuário: $e");
       _user = null;
       notifyListeners();
+      return null; // ✅ evita erro ao tentar acessar depois
     }
   }
 

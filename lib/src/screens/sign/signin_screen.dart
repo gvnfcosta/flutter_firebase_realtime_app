@@ -1,6 +1,6 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
+
 import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
@@ -91,18 +91,18 @@ class _SignInScreenState extends State<SignInScreen> {
                     top: 16,
                     bottom: isKeyboardOpen
                         ? keyboardHeight + 16
-                        : size.height * 0.35, // espaço para footer
+                        : size.height * 0.35,
                   ),
                   child: Column(
                     children: [
                       // === LOGO ===
-                      SizedBox(height: size.height * 0.05),
-                      _buildLogo(),
+                      SizedBox(height: size.height * 0.1),
+                      _buildLogo(size),
 
                       const SizedBox(height: 32),
 
                       // === TÍTULO ===
-                      _buildTitle(),
+                      _buildTitle(size),
 
                       const SizedBox(height: 32),
 
@@ -139,7 +139,7 @@ class _SignInScreenState extends State<SignInScreen> {
       bottom: 0,
       left: 0,
       right: 0,
-      height: size.height * 0.3,
+      height: size.height * 0.25,
       child: AnimatedOpacity(
         opacity: isKeyboardOpen ? 0.3 : 1.0,
         duration: const Duration(milliseconds: 300),
@@ -158,7 +158,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Widget _buildHeaderDecoration(Size size) {
     return SizedBox(
-      height: size.height * 0.35,
+      height: size.height * 0.3,
       width: double.infinity,
       child: ClipPath(
         clipper: BottomInwardClipper(),
@@ -167,46 +167,41 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(Size size) {
+    final double logoSize = size.height * 0.2;
     return Hero(
       tag: 'app_logo',
       child: ClipOval(
         child: Image.asset(
           'assets/images/logo.jpg',
-          height: 250,
-          width: 250,
+          height: logoSize,
+          width: logoSize,
           fit: BoxFit.cover,
         ),
       ),
     );
   }
 
-  Widget _buildTitle() {
-    return Column(
-      children: [
-        Text(
-          programName,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontFamily: 'Arbotek',
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
-            height: 1.2,
+  Widget _buildTitle(Size size) {
+    double fontSize = size.height * 0.04;
+    return Visibility(
+      visible: true,
+
+      child: Column(
+        children: [
+          Text(
+            programName,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Arbotek',
+              fontSize: fontSize,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+              height: 1.2,
+            ),
           ),
-        ),
-        Text(
-          'ILUMINIX',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            // fontFamily: 'Arbotek',
-            fontSize: 36,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
-            height: 1.2,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -224,12 +219,14 @@ class _SignInScreenState extends State<SignInScreen> {
               CustomTextFormField(
                 controller: _emailCtrl,
                 label: 'Email',
+                icon: Icons.email,
                 validator: emailValidator,
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(
                 controller: _passCtrl,
+                icon: Icons.lock,
                 label: 'Senha',
                 obscureText: _obscurePass,
                 validator: passwordValidator,

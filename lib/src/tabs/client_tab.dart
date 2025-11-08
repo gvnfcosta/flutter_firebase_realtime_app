@@ -4,6 +4,7 @@ import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/client/client_buttom_sheet.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/client/client_card.dart';
 import 'package:provider/provider.dart';
@@ -61,40 +62,55 @@ class _ClientTabState extends State<ClientTab> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CustomProgessIndicator());
+      return const Center(child: CustomProgressIndicator());
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: const Icon(Icons.business_center),
-        title: Text('  ${clientTitle}s de $userName'),
+      appBar: CustomAppBar(
+        aboveText: '  ${clientTitle}s de $userName',
+        leading: Icon(Icons.business_center),
+        showBackButton: false,
       ),
+
       body: _clients.isEmpty
           ? const Center(child: Text('Nenhum $clientTitle Cadastrado.'))
           : RefreshIndicator(
               onRefresh: _loadClients,
               child: SingleChildScrollView(
-                child: GridView.builder(
+                child: ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   shrinkWrap: true,
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 150,
-                    mainAxisSpacing: 2,
-                    crossAxisSpacing: 2,
-                    childAspectRatio: 1,
-                  ),
+
                   itemCount: _clients.length,
                   itemBuilder: (context, index) {
                     final client = _clients[index];
-                    return ClientCard(client: client, onTap: () {});
+                    return ClientCard(
+                      client: client,
+                      onTap: () {
+                        Navigator.of(context).pushNamed(
+                          AppRoutes.clientDetail,
+                          arguments: {
+                            'userCode': userCode,
+                            'clientId': client.id,
+                          },
+                        );
+                      },
+                    );
                   },
                 ),
               ),
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
           if (userCode != null) {
-            ClientBottomSheet.show(context, userCode: userCode!);
+            final created = await ClientBottomSheet.show(
+              context,
+              userCode: userCode!,
+            );
+
+            if (created == true) {
+              _loadClients();
+            }
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('$clientTitle não definido')),

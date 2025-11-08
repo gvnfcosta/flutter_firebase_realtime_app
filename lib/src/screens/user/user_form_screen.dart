@@ -1,13 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
-import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:provider/provider.dart';
+
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/models/user_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 
 class UserFormScreen extends StatefulWidget {
   final String uid;
+
   const UserFormScreen({super.key, required this.uid});
 
   @override
@@ -17,49 +21,31 @@ class UserFormScreen extends StatefulWidget {
 class _UserFormScreenState extends State<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
   bool _loading = false;
-  late final String _uid;
+  late String _uid;
+  late String _userEmail;
 
   @override
   void initState() {
     super.initState();
-    _uid = widget.uid; // agora temos o UID garantido
+
+    _uid = widget.uid;
+
     _loadUserData();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Recupera o argumento passado pela rota nomeada
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String) {
-      _uid = args;
-      _loadUserData();
-    }
   }
 
   /// Carrega os dados do usuário autenticado, se existirem
   Future<void> _loadUserData() async {
-    final provider = context.read<UserProvider>();
-
-    // Evita recarregar dados já disponíveis no provider
-    if (provider.user != null && provider.user!.id == _uid) {
-      _nameController.text = provider.user!.name;
-      _emailController.text = provider.user!.email;
-      return;
-    }
-
     try {
-      await provider.fetchUserData(_uid);
-      final user = provider.user;
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final user = await userProvider.fetchUserData(_uid);
+
       if (user != null) {
         _nameController.text = user.name;
-        _emailController.text = user.email;
       }
     } catch (e) {
-      debugPrint("Erro ao carregar dados do usuário: $e");
+      debugPrint('Erro ao carregar dados do usuário: $e');
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao carregar dados do usuário.')),
@@ -74,31 +60,32 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
     try {
       final user = UserModel(
-          id: _uid,
-          name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
-          code: getLastChars(_uid),
-          logoUrl: '',
-          level: 0);
+        id: _uid,
+        name: _nameController.text.trim(),
+        email: _userEmail.trim(),
+        code: getLastChars(_uid),
+        logoUrl: '',
+        level: 0,
+      );
 
       await context.read<UserProvider>().saveUserData(user);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Usuário salvo com sucesso!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Usuário salvo!')));
 
       Navigator.pushNamedAndRemoveUntil(
         context,
-        AppRoutes.userDetail,
+        AppRoutes.home,
         (route) => false, // 🔹 limpa toda a pilha
       );
     } catch (e) {
       debugPrint("Erro ao salvar usuário: $e");
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao salvar: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -107,40 +94,45 @@ class _UserFormScreenState extends State<UserFormScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    _userEmail = FirebaseAuth.instance.currentUser!.email ?? 'sem email';
     return Scaffold(
-      appBar: AppBar(title: const Text('Cadastro de Usuário')),
+      appBar: CustomAppBar(
+        aboveText: 'Cadastro de Usuário',
+        showBackButton: false,
+      ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextFormField(
+              Text(
+                'Complete seu Cadastro',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+
+              const SizedBox(height: 16),
+              CustomTextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Nome',
                 validator: (v) => v!.isEmpty ? 'Informe seu nome' : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (v) => emailValidator(v),
+              CustomTextFormField(
+                initialValue: _userEmail,
+                label: 'Email',
+                readOnly: true,
               ),
               const SizedBox(height: 60),
               SizedBox(
-                width: double.infinity,
+                width: 300,
                 child: ElevatedButton.icon(
                   onPressed: _loading ? null : _saveUser,
                   icon: _loading

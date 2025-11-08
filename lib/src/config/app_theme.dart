@@ -90,8 +90,9 @@ final ThemeData appTheme = ThemeData(
       fontWeight: FontWeight.w600,
       color: Color(0xFF2E7D32),
     ),
-    bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
-    bodyMedium: TextStyle(fontSize: 15, color: Colors.black54),
+    bodySmall: TextStyle(fontSize: 13, color: Colors.white70),
+    bodyLarge: TextStyle(fontSize: 16, color: Colors.white70),
+    bodyMedium: TextStyle(fontSize: 15, color: Colors.white70),
   ),
 
   // 🔹 Cores dos ícones

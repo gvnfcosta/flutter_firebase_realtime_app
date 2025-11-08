@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
 import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
@@ -40,18 +40,13 @@ class _BirthDateFieldState extends State<BirthDateField> {
       children: [
         SizedBox(
           width: 350,
-          child: TextFormField(
+          child: CustomTextFormField(
             controller: widget.controller,
             keyboardType: TextInputType.number,
             inputFormatters: [_dateMask],
-            decoration: InputDecoration(
-              labelText: 'Data de Nascimento',
-              border: const OutlineInputBorder(),
-              suffixIcon: Icon(
-                Icons.date_range,
-                color: AppColors.foregroundIcon,
-              ),
-            ),
+            label: 'Data de Nascimento',
+            icon: Icons.date_range,
+
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Informe a data de nascimento';
@@ -80,14 +75,17 @@ class _BirthDateFieldState extends State<BirthDateField> {
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          widget.controller.text.length == 10
-              ? '${_calculateAge(widget.controller.text)} anos'
-              : '',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.blueGrey,
+        Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Text(
+            widget.controller.text.length == 10
+                ? '${_calculateAge(widget.controller.text)} anos'
+                : '',
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.blueGrey,
+            ),
           ),
         ),
       ],

@@ -184,9 +184,7 @@ class AuthService {
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Conta criada com sucesso. Complete seu cadastro.'),
-        ),
+        const SnackBar(content: Text('Conta criada. Complete seu cadastro.')),
       );
 
       Navigator.pushReplacementNamed(
@@ -219,9 +217,9 @@ class AuthService {
       await LocalStorage.removeLogin();
 
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sessão encerrada com sucesso.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sessão encerrada.')));
 
       Navigator.pushNamedAndRemoveUntil(
         context,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/models/cliente_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:provider/provider.dart';
@@ -82,15 +84,26 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Excluir $clientTitle'),
-        content: const Text(
-          'Tem certeza que deseja excluir este $clientTitle?',
+        content: Text(
+          'Confirma exclusão de ${_client!.name}?',
+          style: TextStyle(color: Colors.red),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar'),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red, // fundo vermelho
+              foregroundColor: Colors.white, // texto branco
+            ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Excluir'),
           ),
@@ -107,9 +120,9 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
       );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('$clientTitle excluído com sucesso.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('$clientTitle excluído.')));
 
       Navigator.pop(context);
     } catch (e) {
@@ -122,158 +135,127 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
     }
   }
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.isEmpty) return '?';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts.first[0] + parts.last[0]).toUpperCase();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final client = _client;
     final theme = Theme.of(context);
 
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Perfil do Usuário')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_client == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Perfil do Usuário')),
+        body: const Center(child: Text('Cliente não encontrado.')),
+      );
+    }
+
+    final client = _client!;
+
     return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: Text(client != null ? client.name : 'Detalhes do $clientTitle'),
+        title: const Text('Perfil do Usuário'),
+        centerTitle: true,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Excluir $clientTitle',
+            icon: const Icon(Icons.edit_rounded),
+            tooltip: 'Editar',
+            onPressed: _goToClientForm,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded),
+            tooltip: 'Excluir',
             onPressed: _deleteClient,
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : client == null
-          ? Center(
-              child: Text(
-                '$clientTitle não encontrado.',
-                style: theme.textTheme.titleMedium,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _buildHeaderCard(context, client),
+            const SizedBox(height: 20),
+            InfoCard(
+              icon: Icons.phone_rounded,
+              label: 'Telefone',
+              value: client.phone,
+            ),
+            InfoCard(
+              icon: Icons.cake_rounded,
+              label: 'Aniversário',
+              value: client.birthday,
+            ),
+            InfoCard(
+              icon: Icons.confirmation_number_rounded,
+              label: 'Código do Usuário',
+              value: client.userCode,
+            ),
+            InfoCard(
+              icon: Icons.monitor_weight_rounded,
+              label: 'Peso',
+              value: '${client.weight.toStringAsFixed(1)} kg',
+            ),
+            const SizedBox(height: 40),
+            Text(
+              'ID Interno: ${client.id}',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.outline,
               ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCard(BuildContext context, ClientModel client) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 38,
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+              child: Text(
+                getInitials(client.name),
+                style: TextStyle(
+                  fontSize: 28,
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
-                  Hero(
-                    tag: 'client_avatar_${client.id}',
-                    child: _buildAvatar(client, theme),
+                  Text(
+                    client.name,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 24),
-                  _buildClientInfoCard(client, theme),
-                  const SizedBox(height: 40),
-                  _buildEditButton(theme, client),
+                  const SizedBox(height: 4),
+                  Text(
+                    client.email,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
+                  ),
                 ],
               ),
             ),
-    );
-  }
-
-  /// 🟣 Avatar circular com gradiente e animação
-  Widget _buildAvatar(ClientModel client, ThemeData theme) {
-    final initials = _getInitials(client.name);
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeOutBack,
-      width: 110,
-      height: 110,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [
-            theme.colorScheme.primaryContainer..withValues(alpha: 0.9),
-            theme.colorScheme.primary,
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.primary..withValues(alpha: 0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Text(
-          initials,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            color: theme.colorScheme.onPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// 📄 Card de informações do cliente
-  Widget _buildClientInfoCard(ClientModel client, ThemeData theme) {
-    final labelStyle = theme.textTheme.titleMedium?.copyWith(
-      color: theme.colorScheme.primary,
-      fontWeight: FontWeight.w600,
-    );
-
-    final valueStyle = theme.textTheme.bodyLarge?.copyWith(
-      color: theme.colorScheme.onSurface,
-    );
-
-    Widget infoRow(String label, String value) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('$label: ', style: labelStyle),
-          Expanded(child: Text(value, style: valueStyle)),
-        ],
-      ),
-    );
-
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            infoRow('Nome', client.name),
-            infoRow('Fone', client.phone),
-            infoRow('Data de Nascimento', client.birthday),
-            infoRow('Peso', '${client.weight.toStringAsFixed(1)} kg'),
-            infoRow('UserCode', client.userCode),
-            infoRow('Client ID', client.id),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// ✏️ Botão moderno com animação Hero
-  Widget _buildEditButton(ThemeData theme, ClientModel client) {
-    return Hero(
-      tag: 'edit_button_${client.id}',
-      child: ElevatedButton.icon(
-        onPressed: _goToClientForm,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: theme.colorScheme.primary,
-          foregroundColor: theme.colorScheme.onPrimary,
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 4,
-        ),
-        icon: const Icon(Icons.edit_outlined, size: 22),
-        label: const Text(
-          'Editar Dados',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );

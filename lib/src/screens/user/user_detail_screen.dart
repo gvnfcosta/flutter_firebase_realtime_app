@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/user/user_bottom_sheet.dart';
@@ -55,7 +56,11 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || !mounted) return;
 
-    await Navigator.pushNamed(context, AppRoutes.userForm, arguments: user.uid);
+    await Navigator.pushReplacementNamed(
+      context,
+      AppRoutes.userForm,
+      arguments: user.uid,
+    );
 
     _loadUserData();
   }
@@ -147,26 +152,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   /// 📄 Card elegante com informações do usuário
   Widget _buildUserInfoCard(Map<String, dynamic> data, ThemeData theme) {
-    final labelStyle = theme.textTheme.titleMedium?.copyWith(
-      color: theme.colorScheme.primary,
-      fontWeight: FontWeight.w600,
-    );
-
-    final valueStyle = theme.textTheme.bodyLarge?.copyWith(
-      color: theme.colorScheme.onSurface,
-    );
-
-    Widget infoRow(String label, String value) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('$label: ', style: labelStyle),
-          Expanded(child: Text(value, style: valueStyle)),
-        ],
-      ),
-    );
-
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -176,11 +161,31 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            infoRow('Nome', data['name'] ?? '-'),
-            infoRow('E-mail', data['email'] ?? '-'),
-            infoRow('ID', FirebaseAuth.instance.currentUser?.uid ?? '-'),
-            infoRow('Code', data['code'] ?? '-'),
-            infoRow('Nível', _getRoleName(data['level'])),
+            InfoCard(
+              icon: Icons.people,
+              label: 'Nome',
+              value: data['name'] ?? '-',
+            ),
+            InfoCard(
+              icon: Icons.email,
+              label: 'E-mail',
+              value: data['email'] ?? '-',
+            ),
+            InfoCard(
+              icon: Icons.numbers,
+              label: 'ID',
+              value: FirebaseAuth.instance.currentUser?.uid ?? '-',
+            ),
+            InfoCard(
+              icon: Icons.code,
+              label: 'Code',
+              value: data['code'] ?? '-',
+            ),
+            InfoCard(
+              icon: Icons.leave_bags_at_home,
+              label: 'Nível',
+              value: _getRoleName(data['level']),
+            ),
           ],
         ),
       ),
@@ -192,8 +197,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     return Hero(
       tag: 'edit_button_$userId',
       child: ElevatedButton.icon(
-        onPressed: () =>
-            UserBottomSheet.show(context, uid: userId), //_goToUserForm,
+        onPressed: () => UserBottomSheet.show(context, uid: userId),
         style: ElevatedButton.styleFrom(
           backgroundColor: theme.colorScheme.primary,
           foregroundColor: theme.colorScheme.onPrimary,

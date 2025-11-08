@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/models/cliente_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/birth_date_field.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
@@ -10,12 +11,13 @@ import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:provider/provider.dart';
 
 class ClientBottomSheet {
-  static Future<void> show(
+  static Future<bool?> show(
     BuildContext context, {
     required String userCode,
     String? clientId,
-  }) async {
-    await showModalBottomSheet(
+  }) {
+    // 👇 return direto, sem "await"
+    return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -104,14 +106,14 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
       await context.read<ClientProvider>().saveClient(user!.uid, client);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('$clientTitle com sucesso!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('$clientTitle Cadastrado!')));
 
-      Navigator.pushNamedAndRemoveUntil(
+      Navigator.pop(context, true);
+      Navigator.pushNamed(
         context,
         AppRoutes.clientDetail,
-        (route) => false,
         arguments: {'userCode': widget.userCode, 'clientId': client.id},
       );
     } catch (e) {
@@ -172,33 +174,24 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
               const SizedBox(height: 20),
 
               // Campos do $clientTitle
-              TextFormField(
+              CustomTextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Nome',
                 validator: (v) => v!.isEmpty ? 'Informe o nome' : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              CustomTextFormField(
                 controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Telefone',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Telefone',
                 validator: (v) => phoneValidator(v),
               ),
               const SizedBox(height: 16),
               BirthDateField(controller: _birthdayController),
               const SizedBox(height: 16),
-              TextFormField(
+              CustomTextFormField(
                 controller: _weightController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Peso (kg)',
-                  border: OutlineInputBorder(),
-                ),
+                label: 'Peso (kg)',
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Informe o peso' : null,
               ),
@@ -229,7 +222,7 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
               ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(context, true),
                 child: const Text('Fechar'),
               ),
               const SizedBox(height: 16),

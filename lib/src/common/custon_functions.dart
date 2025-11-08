@@ -1,10 +1,5 @@
 import 'dart:math';
 
-String getLastChars(String value) {
-  if (value.length <= 6) return value;
-  return value.substring(value.length - 6);
-}
-
 String generateRandomId([int length = 10]) {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   final rand = Random();
@@ -12,6 +7,18 @@ String generateRandomId([int length = 10]) {
     length,
     (index) => chars[rand.nextInt(chars.length)],
   ).join();
+}
+
+String getLastChars(String value) {
+  if (value.length <= 6) return value;
+  return value.substring(value.length - 6);
+}
+
+String getInitials(String name) {
+  final parts = name.trim().split(' ');
+  if (parts.isEmpty) return '?';
+  if (parts.length == 1) return parts.first[0].toUpperCase();
+  return (parts.first[0] + parts.last[0]).toUpperCase();
 }
 
 String capitalize(String text) {
@@ -23,22 +30,23 @@ String capitalize(String text) {
       .toLowerCase()
       .split(RegExp(' ')) // Divide por espaços, "(" ou ")"
       .map((word) {
-    if (word.isEmpty) return ''; // Evita processar strings vazias
+        if (word.isEmpty) return ''; // Evita processar strings vazias
 
-    // Remove a single trailing space if it is the last character
-    if (word.endsWith('  ')) {
-      word = word.substring(0, word.length - 2);
-    }
+        // Remove a single trailing space if it is the last character
+        if (word.endsWith('  ')) {
+          word = word.substring(0, word.length - 2);
+        }
 
-    // Se a palavra está na lista de exceções, mantém minúscula
-    if (excecoes.contains(word)) return word;
+        // Se a palavra está na lista de exceções, mantém minúscula
+        if (excecoes.contains(word)) return word;
 
-    // Se começa com "(", capitaliza a primeira letra depois do "("
-    if (word.startsWith('(') && word.length > 1) {
-      return '(${word[1].toUpperCase()}${word.substring(2)}';
-    }
+        // Se começa com "(", capitaliza a primeira letra depois do "("
+        if (word.startsWith('(') && word.length > 1) {
+          return '(${word[1].toUpperCase()}${word.substring(2)}';
+        }
 
-    // Capitaliza normalmente
-    return word[0].toUpperCase() + word.substring(1);
-  }).join(' ');
+        // Capitaliza normalmente
+        return word[0].toUpperCase() + word.substring(1);
+      })
+      .join(' ');
 }

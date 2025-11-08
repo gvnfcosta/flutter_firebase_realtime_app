@@ -5,8 +5,8 @@ import 'package:flutter_firebase_realtime_app/src/screens/client/client_detail_s
 import 'package:flutter_firebase_realtime_app/src/screens/home/home_screen.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/sign/signin_screen.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/sign/splash_screen.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/user/user_detail_screen.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/user/user_form_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/tabs/user_tab.dart';
 
 class ClientApp extends StatelessWidget {
   const ClientApp({super.key});
@@ -39,7 +39,7 @@ class ClientApp extends StatelessWidget {
             return _buildRoute(UserFormScreen(uid: uid));
 
           case AppRoutes.userDetail:
-            return _buildRoute(const UserTab());
+            return _buildRoute(const UserDetailScreen());
 
           case AppRoutes.clientDetail:
             final args = settings.arguments as Map<String, dynamic>?;
