@@ -16,7 +16,6 @@ class UserProvider with ChangeNotifier {
   }
 
   // Busca os dados do usuário autenticado
-  // Busca os dados do usuário autenticado
   Future<UserModel?> fetchUserData(String uid) async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
 

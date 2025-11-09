@@ -1,12 +1,16 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+import 'widgets/app_title.dart';
+import 'widgets/bottom_inward_clipper.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/sign/signup_buttom_sheet.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/sign_in/widgets/signup_buttom_sheet.dart';
 import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
+
+import 'widgets/custom_button.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -30,25 +34,27 @@ class _SignInScreenState extends State<SignInScreen> {
     _attemptAutoLogin();
   }
 
-  Future<void> _attemptAutoLogin() async {
-    if (_autoTried) return;
-    _autoTried = true;
-
-    setState(() => _loading = true);
-    await AuthService.autoLogin(
-      context: context,
-      emailCtrl: _emailCtrl,
-      passCtrl: _passCtrl,
-      setLoading: (val) => setState(() => _loading = val),
-    );
-    if (mounted) setState(() => _loading = false);
-  }
-
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
+  }
+
+  void _setLoading(bool val) => setState(() => _loading = val);
+
+  Future<void> _attemptAutoLogin() async {
+    if (_autoTried) return;
+    _autoTried = true;
+
+    _setLoading(true);
+    await AuthService.autoLogin(
+      context: context,
+      emailCtrl: _emailCtrl,
+      passCtrl: _passCtrl,
+      setLoading: (val) => _setLoading(val),
+    );
+    if (mounted) _setLoading(false);
   }
 
   Future<void> _handleLogin() async {
@@ -67,13 +73,15 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const double keyboardThreshold = 100;
+    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
+    final isKeyboardOpen = keyboardHeight > keyboardThreshold;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final size = Size(constraints.maxWidth, constraints.maxHeight);
-          final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
-          final isKeyboardOpen = keyboardHeight > 100;
 
           // Altura disponível para conteúdo (sem footer)
 
@@ -90,38 +98,40 @@ class _SignInScreenState extends State<SignInScreen> {
                     right: 16,
                     top: 16,
                     bottom: isKeyboardOpen
-                        ? keyboardHeight + 16
-                        : size.height * 0.35,
+                        ? keyboardHeight +
+                              24 // espaço adequado quando teclado abre
+                        : 40, // padding fixo e menor para evitar rolagem exagerada
                   ),
-                  child: Column(
-                    children: [
-                      // === LOGO ===
-                      SizedBox(height: size.height * 0.1),
-                      _buildLogo(size),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight:
+                          constraints.maxHeight -
+                          (isKeyboardOpen ? keyboardHeight : 0),
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildLogo(size),
+                          const SizedBox(height: 24),
+                          appTitle(size),
+                          const SizedBox(height: 12),
+                          _buildForm(size),
 
-                      const SizedBox(height: 32),
+                          if (_loading && !_autoTried)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 16),
+                              child: Text(
+                                'Tentando login automático...',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
 
-                      // === TÍTULO ===
-                      _buildTitle(size),
-
-                      const SizedBox(height: 32),
-
-                      // === FORMULÁRIO ===
-                      _buildForm(size),
-
-                      // === MENSAGEM DE AUTO LOGIN ===
-                      if (_loading && !_autoTried)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 16),
-                          child: Text(
-                            'Tentando login automático...',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ),
-
-                      // === ESPAÇO MÍNIMO PARA ROLAGEM ===
-                      SizedBox(height: isKeyboardOpen ? 100 : 120),
-                    ],
+                          // Espaço final mínimo
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -145,7 +155,7 @@ class _SignInScreenState extends State<SignInScreen> {
         duration: const Duration(milliseconds: 300),
         child: Transform(
           alignment: Alignment.center,
-          transform: Matrix4.rotationY(math.pi), // 👈 espelha horizontalmente
+          transform: Matrix4.rotationY(math.pi), // 👈 espelhar horizontalmente
           child: Image.asset(
             'assets/images/Footer.png',
             fit: BoxFit.fitHeight,
@@ -162,7 +172,7 @@ class _SignInScreenState extends State<SignInScreen> {
       width: double.infinity,
       child: ClipPath(
         clipper: BottomInwardClipper(),
-        child: Container(color: Colors.green),
+        child: Container(color: AppColors.backGroundColor),
       ),
     );
   }
@@ -178,29 +188,6 @@ class _SignInScreenState extends State<SignInScreen> {
           width: logoSize,
           fit: BoxFit.cover,
         ),
-      ),
-    );
-  }
-
-  Widget _buildTitle(Size size) {
-    double fontSize = size.height * 0.04;
-    return Visibility(
-      visible: true,
-
-      child: Column(
-        children: [
-          Text(
-            programName,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Arbotek',
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.green,
-              height: 1.2,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -223,7 +210,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 validator: emailValidator,
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               CustomTextFormField(
                 controller: _passCtrl,
                 icon: Icons.lock,
@@ -232,22 +219,12 @@ class _SignInScreenState extends State<SignInScreen> {
                 validator: passwordValidator,
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: 200,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _loading ? null : _handleLogin,
-                  child: _loading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Entrar'),
-                ),
+
+              // Botão Entrar
+              CustomButton(
+                text: 'Entrar',
+                isLoading: _loading,
+                onPressed: _handleLogin,
               ),
               const SizedBox(height: 12),
               Align(
@@ -268,37 +245,4 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
     );
   }
-}
-// ===================== CLIPPER =====================
-
-class BottomInwardClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final factor = size.width > 500 ? 2.0 : 1.7;
-    final path = Path();
-
-    final leftDepth = size.height * 0.78;
-    final circleRadius = size.width * factor;
-    final centerY = leftDepth + circleRadius * 0.92;
-    final centerX = size.width * 0.85;
-    final rightHeight = size.height * 0.2;
-
-    path
-      ..moveTo(0, 0)
-      ..lineTo(0, leftDepth)
-      ..arcTo(
-        Rect.fromCircle(center: Offset(centerX, centerY), radius: circleRadius),
-        3.14159,
-        3.14159,
-        false,
-      )
-      ..lineTo(size.width, rightHeight)
-      ..lineTo(size.width, 0)
-      ..close();
-
-    return path;
-  }
-
-  @override
-  bool shouldReclip(_) => false;
 }

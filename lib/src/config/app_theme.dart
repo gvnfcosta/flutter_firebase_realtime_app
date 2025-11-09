@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 final ColorScheme _colorScheme = ColorScheme.fromSeed(
-  seedColor: const Color(0xFF2E7D32), // verde principal
-  primary: const Color(0xFF2E7D32), // verde escuro
-  secondary: const Color(0xFF81C784), // verde claro
-  tertiary: const Color(0xFF4CAF50), // intermediário
+  seedColor: Color(0xFF00695C), // teal principal
+  primary: Color(0xFF00695C), // teal escuro
+  secondary: const Color(0xFF4DB6AC), // teal claro
+  tertiary: const Color(0xFF26A69A), // intermediário
   surface: Colors.white,
   onPrimary: Colors.white,
   onSecondary: Colors.black87,
@@ -17,17 +17,19 @@ final ThemeData appTheme = ThemeData(
   colorScheme: _colorScheme,
   scaffoldBackgroundColor: _colorScheme.surface,
 
-  // 🔹 Estilo geral do AppBar
+  // 🔹 AppBar controlada pelo tema
   appBarTheme: AppBarTheme(
     backgroundColor: _colorScheme.primary,
     foregroundColor: _colorScheme.onPrimary,
     elevation: 1,
-    titleTextStyle: const TextStyle(
+    centerTitle: true,
+    titleTextStyle: TextStyle(
       fontSize: 20,
       fontWeight: FontWeight.w600,
-      color: Colors.white,
+      color: _colorScheme.onPrimary,
     ),
-    iconTheme: const IconThemeData(color: Colors.white),
+    toolbarTextStyle: TextStyle(color: _colorScheme.onPrimary, fontSize: 16),
+    iconTheme: IconThemeData(color: _colorScheme.onPrimary),
   ),
 
   // 🔹 Botões padronizados
@@ -83,22 +85,27 @@ final ThemeData appTheme = ThemeData(
     headlineMedium: TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.bold,
-      color: Color(0xFF1B5E20),
+      color: Color(0xFF004D40), // teal escuro
     ),
     titleMedium: TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.w600,
-      color: Color(0xFF2E7D32),
+      color: Color(0xFF00695C), // teal principal
+    ),
+    titleLarge: TextStyle(
+      color: Colors.white,
+      fontSize: 20,
+      fontWeight: FontWeight.bold,
     ),
     bodySmall: TextStyle(fontSize: 13, color: Colors.white70),
     bodyLarge: TextStyle(fontSize: 16, color: Colors.white70),
     bodyMedium: TextStyle(fontSize: 15, color: Colors.white70),
   ),
 
-  // 🔹 Cores dos ícones
+  // 🔹 Ícones
   iconTheme: IconThemeData(color: _colorScheme.primary),
 
-  // 🔹 SnackBar e Dialogs
+  // 🔹 SnackBar
   snackBarTheme: SnackBarThemeData(
     backgroundColor: _colorScheme.primary,
     contentTextStyle: TextStyle(color: _colorScheme.onPrimary),

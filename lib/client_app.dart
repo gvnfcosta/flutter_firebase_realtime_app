@@ -3,8 +3,8 @@ import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_theme.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/client/client_detail_screen.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/home/home_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/sign/signin_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/sign/splash_screen.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/sign_in/signin_screen.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/sign_in/splash_screen.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/user/user_detail_screen.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/user/user_form_screen.dart';
 

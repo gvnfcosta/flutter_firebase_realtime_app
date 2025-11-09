@@ -21,10 +21,8 @@ class DefaultFirebaseOptions {
     storageBucket: "user-6fcc5.firebasestorage.app",
     messagingSenderId: "867267302263",
     appId: "1:867267302263:web:cfa20b00db23d048a84772",
-    // Se usar Realtime Database:
     databaseURL:
         "https://user-6fcc5-default-rtdb.europe-west1.firebasedatabase.app/",
-    // databaseURL: "https://user-6fcc5-default-rtdb.firebaseio.com",
   );
 
   static const FirebaseOptions android = FirebaseOptions(

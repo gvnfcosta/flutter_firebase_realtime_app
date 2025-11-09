@@ -4,6 +4,7 @@ import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/components/app_drawer.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/user/user_bottom_sheet.dart';
 import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 import 'package:provider/provider.dart';
@@ -65,16 +66,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     _loadUserData();
   }
 
-  Future<void> _logout() async {
-    await LocalStorage.removeLogin();
-    await FirebaseAuth.instance.signOut();
-
-    if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(AppRoutes.signIn, (_) => false);
-  }
-
   @override
   Widget build(BuildContext context) {
     final userProvider = context.watch<UserProvider>();
@@ -92,16 +83,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Perfil de ${userInfo?.name ?? ''}'),
-        actions: [
-          IconButton(
-            onPressed: _logout,
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Sair',
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text('Perfil de ${userInfo?.name ?? ''}')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -116,6 +98,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           ],
         ),
       ),
+      drawer: AppDrawer(),
     );
   }
 

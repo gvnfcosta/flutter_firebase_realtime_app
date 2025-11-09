@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/models/cliente_model.dart';
+import 'package:flutter_firebase_realtime_app/models/client_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';

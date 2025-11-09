@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter_firebase_realtime_app/models/cliente_model.dart';
+import 'package:flutter_firebase_realtime_app/models/client_model.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
 
 class ClientProvider with ChangeNotifier {
@@ -29,8 +29,9 @@ class ClientProvider with ChangeNotifier {
   /// Busca um $clientTitle específico pelo ID
   Future<ClientModel?> fetchClientById(String userCode, String clientId) async {
     try {
-      final snapshot =
-          await dbRef.child('users/$userCode/clients/$clientId').get();
+      final snapshot = await dbRef
+          .child('users/$userCode/clients/$clientId')
+          .get();
 
       if (!snapshot.exists) return null;
 

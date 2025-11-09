@@ -5,3 +5,5 @@ const String version = '1.0';
 const String programName = 'Cadastro de Clientes';
 
 const String clientTitle = "Cliente";
+
+const String footerText = 'ILUMINE INSTALAÇÕES ELÉTRICAS';
