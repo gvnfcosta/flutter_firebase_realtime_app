@@ -1,24 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/models/user_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
-import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:provider/provider.dart';
 
+import '../sign_in/widgets/close_button.dart';
+
+/// Exibe um [BottomSheet] para visualização e edição dos dados de um usuário.
+///
+/// Essa classe serve como ponto de entrada para abrir o modal
+/// de edição de informações pessoais, recebendo o `uid` do usuário atual.
 class UserBottomSheet {
+  /// Mostra o modal do usuário com os dados associados ao [uid].
+  ///
+  /// O [BuildContext] é usado para exibir o modal e acessar o [UserProvider].
   static Future<void> show(BuildContext context, {required String uid}) async {
     await showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      isScrollControlled: true, // permite que ocupe quase a tela toda
       backgroundColor: Colors.transparent,
       builder: (context) => _UserBottomSheetContent(uid: uid),
     );
   }
 }
 
+/// Conteúdo interno do [UserBottomSheet].
+///
+/// Este widget contém o formulário e as ações de salvar/cancelar.
 class _UserBottomSheetContent extends StatefulWidget {
+  /// ID único do usuário a ser editado.
   final String uid;
+
   const _UserBottomSheetContent({required this.uid});
 
   @override
@@ -27,21 +41,33 @@ class _UserBottomSheetContent extends StatefulWidget {
 }
 
 class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
+  /// Chave global do formulário usada para validação.
   final _formKey = GlobalKey<FormState>();
+
+  /// Controlador do campo de nome.
   final _nameCtrl = TextEditingController();
+
+  /// Controlador do campo de e-mail.
   final _emailCtrl = TextEditingController();
+
+  /// Define se a tela está em estado de carregamento (evita ações duplicadas).
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadUserData(); // Carrega os dados do usuário ao abrir o modal.
   }
 
+  /// Carrega os dados do usuário via [UserProvider].
+  ///
+  /// Se o usuário já estiver carregado em memória e corresponder ao [uid],
+  /// apenas preenche os campos. Caso contrário, faz uma busca no Firebase.
   Future<void> _loadUserData() async {
     final provider = context.read<UserProvider>();
     final uid = widget.uid;
 
+    // Reutiliza dados se já estiverem disponíveis
     if (provider.user != null && provider.user!.id == uid) {
       _nameCtrl.text = provider.user!.name;
       _emailCtrl.text = provider.user!.email;
@@ -63,6 +89,10 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
     }
   }
 
+  /// Salva os dados editados do usuário no Firebase.
+  ///
+  /// Primeiro valida o formulário, depois cria um [UserModel] atualizado
+  /// e envia os dados via [UserProvider].
   Future<void> _saveUser() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -97,6 +127,7 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
     }
   }
 
+  /// Libera os recursos dos controladores ao fechar o modal.
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -104,6 +135,8 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
     super.dispose();
   }
 
+  /// Constrói a interface visual do modal, incluindo o formulário
+  /// e os botões de ação (salvar/cancelar).
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -130,7 +163,7 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Indicador superior
+                  /// Indicador superior (aquela barrinha cinza para arrastar)
                   Container(
                     width: 50,
                     height: 5,
@@ -141,12 +174,14 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
                   ),
                   const SizedBox(height: 20),
 
+                  /// Título principal
                   const Text(
                     'Editar Dados do Usuário',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
 
+                  /// Campo de texto: Nome
                   CustomTextFormField(
                     controller: _nameCtrl,
                     label: 'Nome',
@@ -156,6 +191,7 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
                   ),
                   const SizedBox(height: 12),
 
+                  /// Campo de texto: E-mail
                   CustomTextFormField(
                     controller: _emailCtrl,
                     label: 'E-mail',
@@ -165,6 +201,7 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
                   ),
                   const SizedBox(height: 24),
 
+                  /// Botão principal: Salvar
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -189,13 +226,8 @@ class _UserBottomSheetContentState extends State<_UserBottomSheetContent> {
                   ),
                   const SizedBox(height: 16),
 
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      'Cancelar',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
+                  /// Botão secundário: Cancelar
+                  customButton(context, 'Cancelar'),
                 ],
               ),
             ),

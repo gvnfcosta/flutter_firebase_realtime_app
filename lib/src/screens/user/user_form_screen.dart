@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';

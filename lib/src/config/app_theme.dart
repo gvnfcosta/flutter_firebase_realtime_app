@@ -17,7 +17,7 @@ final ThemeData appTheme = ThemeData(
   colorScheme: _colorScheme,
   scaffoldBackgroundColor: _colorScheme.surface,
 
-  // 🔹 AppBar controlada pelo tema
+  // AppBar controlada pelo tema
   appBarTheme: AppBarTheme(
     backgroundColor: _colorScheme.primary,
     foregroundColor: _colorScheme.onPrimary,
@@ -32,7 +32,7 @@ final ThemeData appTheme = ThemeData(
     iconTheme: IconThemeData(color: _colorScheme.onPrimary),
   ),
 
-  // 🔹 Botões padronizados
+  // Botões padronizados
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: _colorScheme.primary,
@@ -52,7 +52,7 @@ final ThemeData appTheme = ThemeData(
     ),
   ),
 
-  // 🔹 Campos de texto
+  // Campos de texto
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: Colors.white,
@@ -71,7 +71,7 @@ final ThemeData appTheme = ThemeData(
     prefixIconColor: _colorScheme.primary,
   ),
 
-  // 🔹 Cartões e superfícies
+  // Cartões e superfícies
   cardTheme: CardThemeData(
     color: Colors.white,
     elevation: 3,
@@ -80,7 +80,7 @@ final ThemeData appTheme = ThemeData(
     margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
   ),
 
-  // 🔹 Texto
+  // Texto
   textTheme: const TextTheme(
     headlineMedium: TextStyle(
       fontSize: 26,
@@ -102,10 +102,20 @@ final ThemeData appTheme = ThemeData(
     bodyMedium: TextStyle(fontSize: 15, color: Colors.white70),
   ),
 
-  // 🔹 Ícones
+  //TextButton
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: _colorScheme.secondary, // 🔹 cor do texto e ícone
+      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  ),
+
+  // Ícones
   iconTheme: IconThemeData(color: _colorScheme.primary),
 
-  // 🔹 SnackBar
+  // SnackBar
   snackBarTheme: SnackBarThemeData(
     backgroundColor: _colorScheme.primary,
     contentTextStyle: TextStyle(color: _colorScheme.onPrimary),

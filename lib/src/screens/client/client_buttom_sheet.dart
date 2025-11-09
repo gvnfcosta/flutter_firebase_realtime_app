@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/models/client_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/birth_date_field.dart';
-import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/sign_in/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
+
+import '../components/phone_field_widget.dart';
 
 class ClientBottomSheet {
   static Future<bool?> show(
@@ -167,6 +171,7 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
               Text(
                 isEditing ? 'Editar $clientTitle' : 'Novo $clientTitle',
                 style: const TextStyle(
+                  color: AppColors.secondry,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -176,54 +181,51 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
               // Campos do $clientTitle
               CustomTextFormField(
                 controller: _nameController,
+                icon: Icons.person,
                 label: 'Nome',
                 validator: (v) => v!.isEmpty ? 'Informe o nome' : null,
               ),
-              const SizedBox(height: 16),
-              CustomTextFormField(
+              const SizedBox(height: 4),
+              // CustomTextFormField(
+              //   controller: _phoneController,
+              //   keyboardType: TextInputType.phone,
+              //   label: 'Telefone',
+              //   validator: (v) => phoneValidator(v),
+              // ),
+              PhoneFieldWidget(
                 controller: _phoneController,
-                label: 'Telefone',
-                validator: (v) => phoneValidator(v),
+                onChanged: (value) {
+                  debugPrint('PhoneField: Valor digitado = $value');
+                },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
               BirthDateField(controller: _birthdayController),
-              const SizedBox(height: 16),
+              const SizedBox(height: 4),
               CustomTextFormField(
                 controller: _weightController,
+                icon: Icons.scale,
                 keyboardType: TextInputType.number,
                 label: 'Peso (kg)',
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Informe o peso' : null,
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _loading ? null : _saveClient,
-                  icon: _loading
-                      ? const SizedBox(
-                          height: 16,
-                          width: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save),
-                  label: Text(
-                    _loading
-                        ? 'Salvando...'
-                        : (isEditing ? 'Atualizar' : 'Salvar'),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(45),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
+              CustomButton(
+                text: _loading
+                    ? 'Salvando...'
+                    : (isEditing ? 'Atualizar' : 'Salvar'),
+                onPressed: _loading ? null : _saveClient,
               ),
+
               const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Fechar'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Fechar'),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
             ],

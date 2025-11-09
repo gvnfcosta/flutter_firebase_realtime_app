@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/sign_in/widgets/close_button.dart';
 import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
+
+import 'custom_button.dart';
 
 class SignUpBottomSheet {
   static Future<void> show(BuildContext context) async {
@@ -55,7 +58,7 @@ class _SignUpContentState extends State<_SignUpContent> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.48,
+      initialChildSize: 0.56,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
@@ -137,37 +140,16 @@ class _SignUpContentState extends State<_SignUpContent> {
                     const SizedBox(height: 24),
 
                     // Botão Cadastrar
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: _loading ? null : _handleSignUp,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: _loading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Cadastrar'),
-                      ),
+                    CustomButton(
+                      text: 'Cadastrar',
+                      isLoading: _loading,
+                      onPressed: _handleSignUp,
                     ),
+
                     const SizedBox(height: 12),
 
                     // Fechar
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'Já tenho conta / Fechar',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
+                    customButton(context, 'Já tenho conta'),
 
                     // Espaço final
                   ],

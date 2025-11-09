@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔹 Tenta acessar o provider de forma segura
+    // Tenta acessar o provider de forma segura
     final userProvider = context.watch<UserProvider?>();
     final user = userProvider?.user;
 
@@ -35,10 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
       return const Scaffold(body: Center(child: CustomProgressIndicator()));
     }
 
-    // 🔹 Define abas
+    // Define abas
     final List<Widget> tabs = [const ClientTab(), const UserDetailScreen()];
 
-    // 🔹 Define itens da bottom bar
+    // Define itens da bottom bar
     final List<BottomNavigationBarItem> navItems = const [
       BottomNavigationBarItem(icon: Icon(Icons.home), label: clientTitle),
       BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // 🔹 Fundo com logo (transparente)
+          // Fundo com logo (transparente)
           if (user.logoUrl.isNotEmpty)
             Center(
               child: Opacity(
@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-          // 🔹 Conteúdo principal (tabs)
+          // Conteúdo principal (tabs)
           PageView(
             controller: pageController,
             physics: const NeverScrollableScrollPhysics(),
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // 🔹 Barra inferior de navegação
+      // Barra inferior de navegação
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {

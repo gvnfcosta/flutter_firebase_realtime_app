@@ -25,6 +25,7 @@ abstract class AppColors {
   // Button
   static const Color backGroundButton = Colors.teal;
   static const Color foregroundButton = Colors.white;
+  static final Color disabledBackgroundColor = Colors.grey[300]!;
 
   // ColorScheme
   static const Color primary = Colors.black;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/src/common/custom_text_field.dart';
+import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:intl/intl.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
