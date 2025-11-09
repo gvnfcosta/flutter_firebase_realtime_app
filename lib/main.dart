@@ -1,31 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'providers/user_provider.dart';
-import 'screens/signin_screen.dart';
 import 'firebase_options.dart';
+
+import 'package:flutter_firebase_realtime_app/client_app.dart';
+import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
+import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
-  runApp(const MyApp());
-}
+  await initializeFirebase();
+  SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: AppColors.appBarBackground,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
+  runApp(
+    MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => ClientProvider()),
       ],
-      child: MaterialApp(
-        title: 'Cadastro Firebase',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(primarySwatch: Colors.indigo),
-        home: const SignInScreen(),
-      ),
-    );
+      child: const ClientApp(),
+    ),
+  );
+}
+
+Future<void> initializeFirebase() async {
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+
+    debugPrint("Firebase inicializado com sucesso!");
+  } catch (e) {
+    debugPrint("Erro ao inicializar Firebase: $e");
   }
 }
