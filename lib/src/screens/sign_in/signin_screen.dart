@@ -7,7 +7,7 @@ import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/sign_in/widgets/signup_buttom_sheet.dart';
-import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
+import 'package:flutter_firebase_realtime_app/src/services/auth/auth_service.dart';
 
 import 'widgets/custom_button.dart';
 
@@ -263,15 +263,66 @@ class _SignInScreenState extends State<SignInScreen> {
                       : () => SignUpBottomSheet.show(
                           context,
                         ), // abre modal de cadastro
-                  child: const Text(
+                  child: Text(
                     'Criar nova conta',
-                    style: TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: Colors.grey[300]!),
                   ),
                 ),
               ),
+              // Botão "Esqueci a senha?"
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: _loading
+                      ? null
+                      : () => _showForgotPasswordDialog(context),
+                  child: Text(
+                    'Esqueci a senha?',
+                    style: TextStyle(color: Colors.grey[300]!),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showForgotPasswordDialog(BuildContext context) {
+    final parentContext = context; // <- salva o contexto principal
+    final emailController = TextEditingController(text: _emailCtrl.text);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Redefinir senha'),
+        content: TextField(
+          controller: emailController,
+          decoration: const InputDecoration(
+            labelText: 'Digite seu email',
+            prefixIcon: Icon(Icons.email),
+          ),
+          keyboardType: TextInputType.emailAddress,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await AuthService.resetPassword(
+                context: parentContext,
+                email: emailController.text.trim(),
+              );
+            },
+
+            child: const Text('Enviar'),
+          ),
+        ],
       ),
     );
   }

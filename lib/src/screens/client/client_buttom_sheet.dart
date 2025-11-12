@@ -5,7 +5,6 @@ import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/birth_date_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
-import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';

@@ -6,8 +6,9 @@ import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/components/app_drawer.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/user/user_bottom_sheet.dart';
-import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
 import 'package:provider/provider.dart';
+
+import '../../services/auth/auth_service.dart';
 
 class UserDetailScreen extends StatefulWidget {
   const UserDetailScreen({super.key});
@@ -95,6 +96,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
             _buildUserInfoCard(_userData!, theme),
             const SizedBox(height: 40),
             _buildEditButton(theme, userId),
+            const SizedBox(height: 16),
           ],
         ),
       ),

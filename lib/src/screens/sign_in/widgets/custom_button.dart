@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;

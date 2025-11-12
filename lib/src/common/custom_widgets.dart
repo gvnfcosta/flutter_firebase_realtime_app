@@ -46,12 +46,14 @@ abstract class DefaultAppBar extends StatelessWidget
 
 /// 🔹 Implementação padrão da AppBar
 class CustomAppBar extends DefaultAppBar {
+  final List<Widget>? actions;
   const CustomAppBar({
     super.key,
     required super.aboveText,
     super.belowText,
     super.leading,
     super.showBackButton,
+    this.actions,
   });
 
   @override
@@ -69,19 +71,20 @@ class CustomAppBar extends DefaultAppBar {
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
 
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(context).textTheme.titleSmall,
               ),
               if (belowText != null)
                 Text(
                   belowText!.toUpperCase(),
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
             ],
           ),
         ],
       ),
       centerTitle: true,
+      actions: actions,
     );
   }
 }

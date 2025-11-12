@@ -17,8 +17,8 @@ class ClientApp extends StatelessWidget {
       title: 'Client App',
       debugShowCheckedModeBanner: false,
       theme: appTheme,
-      initialRoute: AppRoutes.home,
-      // initialRoute: AppRoutes.signIn,
+      // initialRoute: AppRoutes.home,
+      initialRoute: AppRoutes.signIn,
       // initialRoute: AppRoutes.splash,
       onGenerateRoute: (settings) {
         switch (settings.name) {
@@ -38,8 +38,8 @@ class ClientApp extends StatelessWidget {
             }
             return _buildRoute(UserFormScreen(uid: uid));
 
-          case AppRoutes.userDetail:
-            return _buildRoute(const UserDetailScreen());
+          // case AppRoutes.userDetail:
+          //   return _buildRoute(const UserDetailScreen());
 
           case AppRoutes.clientDetail:
             final args = settings.arguments as Map<String, dynamic>?;

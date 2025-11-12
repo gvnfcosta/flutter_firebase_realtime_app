@@ -15,6 +15,11 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void clearUser() {
+    _user = null;
+    notifyListeners();
+  }
+
   // Busca os dados do usuário autenticado
   Future<UserModel?> fetchUserData(String uid) async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
@@ -56,6 +61,18 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("Erro ao salvar usuário: $e");
+      rethrow;
+    }
+  }
+
+  // Exclui dados do usuario do Firebase
+  Future<void> deleteUserData(String uid) async {
+    try {
+      await dbRef.child('users/$uid').remove();
+      debugPrint("✅ Dados do usuário $uid removidos do Realtime Database");
+      clearUser();
+    } catch (e) {
+      debugPrint("Erro ao excluir dados do usuário: $e");
       rethrow;
     }
   }

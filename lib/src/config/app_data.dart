@@ -7,3 +7,5 @@ const String programName = 'Cadastro de Clientes';
 const String clientTitle = "Cliente";
 
 const String footerText = 'ILUMINE INSTALAÇÕES ELÉTRICAS';
+
+const String defaultError = 'Ocorreu um erro inesperado. Tente novamente.';
