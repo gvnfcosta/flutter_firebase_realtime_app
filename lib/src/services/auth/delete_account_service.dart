@@ -1,18 +1,16 @@
-// ===============================================================
-// EXCLUIR USUÁRIO
-// ===============================================================
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/user_provider.dart';
-import '../../../utils/local_storage.dart';
 import '../../config/app_routes.dart';
+import 'auth_service.dart';
 import 'auth_utils.dart';
 
+// ===============================================================
+// EXCLUIR USUÁRIO
+// ===============================================================
 class DeleteAccountService {
-  static final _auth = FirebaseAuth.instance;
-
   static Future<void> deleteAccount(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -28,10 +26,9 @@ class DeleteAccountService {
 
       // 🧹 Remove conta do Auth
       await user.delete();
+      AuthService.logout(context);
 
       // 🔒 Limpa cache e estado local
-      await LocalStorage.removeLogin();
-      await _auth.signOut();
       userProvider.clearUser();
 
       if (context.mounted) {
@@ -39,22 +36,28 @@ class DeleteAccountService {
           context,
           'Conta excluída e dados removidos com sucesso.',
         );
+
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil(AppRoutes.signIn, (route) => false);
       }
     } on FirebaseAuthException catch (e) {
+      if (!context.mounted) return;
+
       if (e.code == 'requires-recent-login') {
         final success = await _reauthenticateUser(context, user);
         if (success) {
+          if (!context.mounted) return;
           await deleteAccount(context); // tenta novamente
         } else {
+          if (!context.mounted) return;
           AuthUtils.showSnack(context, 'Reautenticação cancelada.');
         }
       } else {
         AuthUtils.showSnack(context, 'Erro ao excluir conta: ${e.code}');
       }
     } catch (e) {
+      if (!context.mounted) return;
       AuthUtils.showSnack(context, 'Erro inesperado: $e');
     }
   }
@@ -113,10 +116,12 @@ class DeleteAccountService {
       await user.reauthenticateWithCredential(cred);
       return true;
     } on FirebaseAuthException catch (e) {
-      AuthUtils.showSnack(
-        context,
-        AuthUtils.mapFirebaseAuthCodeToMessage(e.code),
-      );
+      if (context.mounted) {
+        AuthUtils.showSnack(
+          context,
+          AuthUtils.mapFirebaseAuthCodeToMessage(e.code),
+        );
+      }
       return false;
     }
   }

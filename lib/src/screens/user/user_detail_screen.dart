@@ -8,8 +8,6 @@ import 'package:flutter_firebase_realtime_app/src/screens/components/app_drawer.
 import 'package:flutter_firebase_realtime_app/src/screens/user/user_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
-import '../../services/auth/auth_service.dart';
-
 class UserDetailScreen extends StatefulWidget {
   const UserDetailScreen({super.key});
 

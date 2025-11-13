@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_theme.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/client/client_detail_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/home/home_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/sign_in/signin_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/sign_in/splash_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/user/user_detail_screen.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/user/user_form_screen.dart';
+
+import 'src/config/app_routes.dart';
+import 'src/config/app_theme.dart';
+import 'src/screens/client/client_detail_screen.dart';
+import 'src/screens/home/home_screen.dart';
+import 'src/screens/sign_in/signin_screen.dart';
+import 'src/screens/sign_in/splash_screen.dart';
+import 'src/screens/user/user_form_screen.dart';
 
 class ClientApp extends StatelessWidget {
   const ClientApp({super.key});
@@ -37,9 +37,6 @@ class ClientApp extends StatelessWidget {
               throw ArgumentError('UID obrigatório para UserFormScreen');
             }
             return _buildRoute(UserFormScreen(uid: uid));
-
-          // case AppRoutes.userDetail:
-          //   return _buildRoute(const UserDetailScreen());
 
           case AppRoutes.clientDetail:
             final args = settings.arguments as Map<String, dynamic>?;

@@ -9,6 +9,8 @@ import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/models/user_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 
+import '../../common/validators.dart';
+
 class UserFormScreen extends StatefulWidget {
   final String uid;
 
@@ -122,7 +124,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
               CustomTextFormField(
                 controller: _nameController,
                 label: 'Nome',
-                validator: (v) => v!.isEmpty ? 'Informe seu nome' : null,
+                validator: nameValidator,
               ),
               const SizedBox(height: 16),
               CustomTextFormField(

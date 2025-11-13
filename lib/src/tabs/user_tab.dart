@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_firebase_realtime_app/src/services/auth/delete_account_service.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/user_provider.dart';
@@ -9,7 +8,6 @@ import '../config/app_colors.dart';
 import '../config/app_routes.dart';
 import '../screens/components/app_drawer.dart';
 import '../screens/user/user_bottom_sheet.dart';
-import '../services/auth/auth_service.dart';
 
 class UserTab extends StatefulWidget {
   const UserTab({super.key});
@@ -97,8 +95,6 @@ class _UserTabState extends State<UserTab> {
             _buildUserInfoCard(_userData!, theme),
             const SizedBox(height: 40),
             _buildEditButton(theme, userId),
-            const SizedBox(height: 16),
-            _buildDeleteButton(theme, userId),
           ],
         ),
       ),
@@ -199,52 +195,6 @@ class _UserTabState extends State<UserTab> {
           'Editar Dados',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
-      ),
-    );
-  }
-
-  /// 🗑️ Botão de exclusão de conta
-  Widget _buildDeleteButton(ThemeData theme, String userId) {
-    return ElevatedButton.icon(
-      onPressed: () async {
-        final confirm = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Excluir conta'),
-            content: const Text(
-              'Tem certeza de que deseja excluir permanentemente sua conta? Esta ação não pode ser desfeita.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                ),
-                child: const Text('Excluir'),
-              ),
-            ],
-          ),
-        );
-
-        if (confirm == true) {
-          await DeleteAccountService.deleteAccount(context);
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.redAccent,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 4,
-      ),
-      icon: const Icon(Icons.delete_forever, size: 22),
-      label: const Text(
-        'Excluir Conta',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     );
   }

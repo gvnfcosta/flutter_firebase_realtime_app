@@ -12,22 +12,22 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    UserModel usuario = Provider.of<UserProvider>(context).user!;
+    UserModel user = Provider.of<UserProvider>(context).user!;
 
     return Drawer(
       child: Column(
         children: [
           AppBar(
-            title: Text('Bem vindo ${usuario.name.split(' ')[0]}!'),
+            title: Text('Bem vindo ${user.name.split(' ')[0]}!'),
             automaticallyImplyLeading: false,
           ),
-          usuario.isAdmin
+          user.isAdmin
               ? Column(
                   children: [
                     const Divider(),
                     ListTile(
                       leading: const Icon(Icons.person_2_outlined),
-                      title: Text(usuario.role),
+                      title: Text(user.role),
                       onTap: () {
                         Navigator.of(context).pushNamed(AppRoutes.userForm);
                       },
@@ -71,7 +71,7 @@ class AppDrawer extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Excluir conta'),
         content: const Text(
-          'Tem certeza de que deseja excluir permanentemente sua conta? Esta ação não pode ser desfeita.',
+          'Tem certeza de que deseja excluir permanentemente sua conta?\nEsta ação não pode ser desfeita.',
         ),
         actions: [
           TextButton(
@@ -87,8 +87,31 @@ class AppDrawer extends StatelessWidget {
       ),
     );
 
-    if (confirm == true) {
-      await DeleteAccountService.deleteAccount(context);
+    if (confirm == true && context.mounted) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Excluir conta'),
+          content: const Text('Todos os dados do sistema serão apagados.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+              ),
+              child: const Text('Excluir'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm == true && context.mounted) {
+        await DeleteAccountService.deleteAccount(context);
+      }
     }
   }
 }
