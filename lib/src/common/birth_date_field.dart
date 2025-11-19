@@ -39,7 +39,7 @@ class _BirthDateFieldState extends State<BirthDateField> {
     return Row(
       children: [
         SizedBox(
-          width: 350,
+          width: 250,
           child: CustomTextFormField(
             controller: widget.controller,
             keyboardType: TextInputType.number,

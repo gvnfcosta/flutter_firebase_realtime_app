@@ -6,7 +6,7 @@ Widget customButton(BuildContext context, String text) {
     children: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: Text(text, style: TextStyle(color: Colors.grey)),
+        child: Text(text, style: TextStyle(color: Colors.grey[400]!)),
       ),
     ],
   );

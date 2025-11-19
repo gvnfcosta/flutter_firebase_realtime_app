@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
-import 'package:flutter_firebase_realtime_app/utils/local_storage.dart';
+
+import '../../providers/user_provider.dart';
+import '../common/custom_widgets.dart';
+import '../config/app_colors.dart';
+import '../config/app_routes.dart';
+import '../screens/components/app_drawer.dart';
+import '../screens/user/user_bottom_sheet.dart';
 
 class UserTab extends StatefulWidget {
   const UserTab({super.key});
@@ -52,22 +56,21 @@ class _UserTabState extends State<UserTab> {
   Future<void> _goToUserForm() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || !mounted) return;
-    Navigator.pushNamed(context, AppRoutes.userForm, arguments: user.uid);
-  }
 
-  Future<void> _logout() async {
-    await LocalStorage.removeLogin();
-    await FirebaseAuth.instance.signOut();
-
-    if (!mounted) return;
-    Navigator.of(
+    await Navigator.pushReplacementNamed(
       context,
-    ).pushNamedAndRemoveUntil(AppRoutes.signIn, (_) => false);
+      AppRoutes.userForm,
+      arguments: user.uid,
+    );
+
+    _loadUserData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final userInfo = context.watch<UserProvider>().user;
+    final userProvider = context.watch<UserProvider>();
+    final userInfo = userProvider.user;
+    final theme = Theme.of(context);
 
     if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -77,57 +80,135 @@ class _UserTabState extends State<UserTab> {
       return const Scaffold(body: Center(child: Text('Redirecionando...')));
     }
 
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Bem-vindo, ${userInfo?.name ?? ''} (${userInfo?.role ?? ''})',
+      appBar: CustomAppBar(aboveText: 'Perfil de ${userInfo?.name ?? ''}'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            Hero(tag: 'user_avatar_$userId', child: _buildAvatar(theme)),
+            const SizedBox(height: 24),
+            _buildUserInfoCard(_userData!, theme),
+            const SizedBox(height: 40),
+            _buildEditButton(theme, userId),
+          ],
         ),
-        actions: [
-          IconButton(
-            onPressed: _logout,
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sair',
+      ),
+      drawer: AppDrawer(),
+    );
+  }
+
+  /// 🟣 Avatar circular com gradiente e sombra suave
+  Widget _buildAvatar(ThemeData theme) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOutBack,
+      width: 110,
+      height: 110,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [
+            theme.colorScheme.primaryContainer.withValues(alpha: 0.9),
+            theme.colorScheme.primary,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.primary.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      child: Center(
+        child: Icon(Icons.person, size: 72, color: AppColors.foregroundButton),
+      ),
+    );
+  }
+
+  /// 📄 Card elegante com informações do usuário
+  Widget _buildUserInfoCard(Map<String, dynamic> data, ThemeData theme) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Nome: ${_userData?['name'] ?? ''}',
-              style: const TextStyle(fontSize: 18),
+            InfoCard(
+              icon: Icons.people,
+              label: 'Nome',
+              value: data['name'] ?? '-',
             ),
-            const SizedBox(height: 8),
-            Text(
-              'E-mail: ${_userData?['email'] ?? ''}',
-              style: const TextStyle(fontSize: 18),
+            InfoCard(
+              icon: Icons.email,
+              label: 'E-mail',
+              value: data['email'] ?? '-',
             ),
-            const SizedBox(height: 8),
-            Text(
-              'ID: ${FirebaseAuth.instance.currentUser?.uid ?? ''}',
-              style: const TextStyle(fontSize: 16),
+            InfoCard(
+              icon: Icons.numbers,
+              label: 'ID',
+              value: FirebaseAuth.instance.currentUser?.uid ?? '-',
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Code: ${_userData?['code'] ?? ''}',
-              style: const TextStyle(fontSize: 16),
+            InfoCard(
+              icon: Icons.code,
+              label: 'Code',
+              value: data['code'] ?? '-',
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Nível: ${_userData?['level'] ?? ''}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 60),
-            ElevatedButton.icon(
-              onPressed: _goToUserForm,
-              icon: const Icon(Icons.edit),
-              label: const Text('Editar Dados'),
+            InfoCard(
+              icon: Icons.leave_bags_at_home,
+              label: 'Nível',
+              value: _getRoleName(data['level']),
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// ✏️ Botão moderno de edição com Hero animation
+  Widget _buildEditButton(ThemeData theme, String userId) {
+    return Hero(
+      tag: 'edit_button_$userId',
+      child: ElevatedButton.icon(
+        onPressed: () => UserBottomSheet.show(context, uid: userId),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: theme.colorScheme.primary,
+          foregroundColor: theme.colorScheme.onPrimary,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 4,
+        ),
+        icon: const Icon(Icons.edit_outlined, size: 22),
+        label: const Text(
+          'Editar Dados',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+
+  String _getRoleName(dynamic level) {
+    switch (level) {
+      case 2:
+        return 'Admin';
+      case 1:
+        return 'Usuário';
+      case 0:
+        return 'Inativo';
+      default:
+        return '-';
+    }
   }
 }

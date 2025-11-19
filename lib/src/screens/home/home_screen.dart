@@ -3,8 +3,8 @@ import 'package:flutter_firebase_realtime_app/providers/user_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/user/user_detail_screen.dart';
 import 'package:flutter_firebase_realtime_app/src/tabs/client_tab.dart';
+import 'package:flutter_firebase_realtime_app/src/tabs/user_tab.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // Define abas
-    final List<Widget> tabs = [const ClientTab(), const UserDetailScreen()];
+    final List<Widget> tabs = [const ClientTab(), const UserTab()];
 
     // Define itens da bottom bar
     final List<BottomNavigationBarItem> navItems = const [
@@ -80,11 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Color.lerp(
-          AppColors.appBarBackground,
-          Colors.black,
-          0.5,
-        ),
+        backgroundColor: AppColors.appBarBackground,
+
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.white.withAlpha(120),
         selectedFontSize: 15,

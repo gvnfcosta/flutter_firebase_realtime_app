@@ -1,13 +1,14 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+import '../../config/app_data.dart';
 import 'widgets/app_title.dart';
 import 'widgets/bottom_inward_clipper.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/sign_in/widgets/signup_buttom_sheet.dart';
-import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
+import 'package:flutter_firebase_realtime_app/src/services/auth/auth_service.dart';
 
 import 'widgets/custom_button.dart';
 
@@ -196,16 +197,31 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   /// Exibe o logotipo circular com animação Hero
+
   Widget _buildLogo(Size size) {
-    final double logoSize = size.height * 0.2;
+    final double logoSize = size.height * 0.3;
+
     return Hero(
-      tag: 'app_logo', // animação entre telas com mesmo tag
-      child: ClipOval(
-        child: Image.asset(
-          'assets/images/Logo.jpg',
+      tag: 'app_logo',
+      child: Center(
+        child: Container(
           height: logoSize,
           width: logoSize,
-          fit: BoxFit.cover,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.grey.withValues(alpha: 0.2),
+              width: 3,
+            ),
+          ),
+          child: ClipOval(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.asset('assets/images/Logo.jpg', fit: BoxFit.cover),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -234,7 +250,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 validator: emailValidator, // valida formato do email
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 8),
 
               // Campo de senha
               CustomTextFormField(
@@ -244,34 +259,97 @@ class _SignInScreenState extends State<SignInScreen> {
                 obscureText: _obscurePass, // oculta caracteres
                 validator: passwordValidator, // valida comprimento mínimo
               ),
-              const SizedBox(height: 24),
-
-              // Botão de login
-              CustomButton(
-                text: 'Entrar',
-                isLoading: _loading,
-                onPressed: _handleLogin,
-              ),
-              const SizedBox(height: 12),
-
-              // Botão para criar nova conta (abre bottom sheet)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _loading
-                      ? null
-                      : () => SignUpBottomSheet.show(
-                          context,
-                        ), // abre modal de cadastro
-                  child: const Text(
-                    'Criar nova conta',
-                    style: TextStyle(color: AppColors.textSecondary),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Botão de login
+                  CustomButton(
+                    text: 'Entrar',
+                    isLoading: _loading,
+                    onPressed: _handleLogin,
                   ),
-                ),
+                  Column(
+                    children: [
+                      // Botão para criar nova conta (abre bottom sheet)
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                        ),
+                        onPressed: _loading
+                            ? null
+                            : () => SignUpBottomSheet.show(
+                                context,
+                              ), // abre modal de cadastro
+                        child: Text(
+                          newAccount,
+                          style: TextStyle(color: AppColors.textTertiary),
+                        ),
+                      ),
+                      // Botão "Esqueci a senha?"
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                        ),
+                        onPressed: _loading
+                            ? null
+                            : () => _showForgotPasswordDialog(context),
+                        child: Text(
+                          forgotPassword,
+                          style: TextStyle(color: AppColors.textTertiary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showForgotPasswordDialog(BuildContext context) {
+    final parentContext = context; // <- salva o contexto principal
+    final emailController = TextEditingController(text: _emailCtrl.text);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Redefinir senha'),
+        content: TextField(
+          controller: emailController,
+          decoration: const InputDecoration(
+            labelText: 'Digite seu email',
+            prefixIcon: Icon(Icons.email),
+          ),
+          keyboardType: TextInputType.emailAddress,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              await AuthService.resetPassword(
+                context: parentContext,
+                email: emailController.text.trim(),
+              );
+            },
+
+            child: const Text('Enviar'),
+          ),
+        ],
       ),
     );
   }

@@ -12,7 +12,7 @@ abstract class AppColors {
   // Text
   static const Color textPrimary = Colors.black;
   static const Color textSecondary = Colors.black54;
-  static const Color textTertiary = Colors.black12;
+  static const Color textTertiary = Colors.black38;
 
   // Input
   static const Color inputBorder = Colors.black;

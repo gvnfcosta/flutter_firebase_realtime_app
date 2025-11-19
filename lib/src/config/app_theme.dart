@@ -37,6 +37,7 @@ final ThemeData appTheme = ThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: _colorScheme.primary,
       foregroundColor: _colorScheme.onPrimary,
+      disabledBackgroundColor: _colorScheme.primary.withAlpha(100),
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       textStyle: const TextStyle(fontWeight: FontWeight.w600),
@@ -68,6 +69,7 @@ final ThemeData appTheme = ThemeData(
       borderSide: BorderSide(color: _colorScheme.primary, width: 1.5),
     ),
     labelStyle: TextStyle(color: _colorScheme.primary),
+    hintStyle: TextStyle(color: Colors.black54),
     prefixIconColor: _colorScheme.primary,
   ),
 
@@ -97,16 +99,21 @@ final ThemeData appTheme = ThemeData(
       fontSize: 20,
       fontWeight: FontWeight.bold,
     ),
-    bodySmall: TextStyle(fontSize: 13, color: Colors.white70),
-    bodyLarge: TextStyle(fontSize: 16, color: Colors.white70),
-    bodyMedium: TextStyle(fontSize: 15, color: Colors.white70),
+    titleSmall: TextStyle(
+      color: Colors.white,
+      fontSize: 14,
+      fontWeight: FontWeight.bold,
+    ),
+    bodyMedium: TextStyle(fontSize: 15, color: Colors.black87),
+    bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
+    bodySmall: TextStyle(fontSize: 13, color: Colors.black54),
   ),
 
   //TextButton
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
       foregroundColor: _colorScheme.secondary, // 🔹 cor do texto e ícone
-      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      textStyle: const TextStyle(fontWeight: FontWeight.w400, fontSize: 14),
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),

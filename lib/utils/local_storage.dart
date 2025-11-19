@@ -5,10 +5,14 @@ class LocalStorage {
   static const _keyUid = 'uid';
   static const _keyEmail = 'email';
   static const _keyPass = 'password';
+  static const _keySkipAutoLogin = 'skip_auto_login';
 
   /// 🔹 Salva UID, email e senha (com codificação Base64)
-  static Future<void> saveLogin(String uid, String email,
-      [String? password]) async {
+  static Future<void> saveLogin(
+    String uid,
+    String email, [
+    String? password,
+  ]) async {
     final prefs = await SharedPreferences.getInstance();
     prefs
       ..setString(_keyUid, uid)
@@ -37,10 +41,8 @@ class LocalStorage {
     if (stored == null || stored.isEmpty) return null;
 
     try {
-      // Tenta decodificar (suporta logins antigos em texto puro)
       return utf8.decode(base64Decode(stored));
     } catch (_) {
-      // Caso não seja Base64 válido, retorna o valor original
       return stored;
     }
   }
@@ -57,5 +59,21 @@ class LocalStorage {
   static Future<bool> isLogged() async {
     final uid = await getUid();
     return uid != null && uid.isNotEmpty;
+  }
+
+  // ===============================================================
+  // 🚫 AUTO LOGIN FLAG
+  // ===============================================================
+
+  /// Define se o autoLogin deve ser ignorado (ex.: após exclusão de conta)
+  static Future<void> setSkipAutoLogin(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keySkipAutoLogin, value);
+  }
+
+  /// Retorna true se o autoLogin deve ser ignorado
+  static Future<bool> getSkipAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keySkipAutoLogin) ?? false;
   }
 }

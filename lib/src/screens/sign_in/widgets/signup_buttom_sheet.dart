@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custom_text_form_field.dart';
 import 'package:flutter_firebase_realtime_app/src/common/validators.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/sign_in/widgets/close_button.dart';
-import 'package:flutter_firebase_realtime_app/src/services/auth_services.dart';
+import 'package:flutter_firebase_realtime_app/src/services/auth/auth_service.dart';
 
 import 'custom_button.dart';
 
@@ -58,7 +58,7 @@ class _SignUpContentState extends State<_SignUpContent> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.56,
+      initialChildSize: 0.6,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       builder: (context, scrollController) {

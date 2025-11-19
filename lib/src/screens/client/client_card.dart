@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
 
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
+import 'package:flutter_firebase_realtime_app/src/screens/components/embaralhar_string.dart';
 
 class ClientCard extends StatelessWidget {
   final dynamic client;
@@ -55,7 +56,7 @@ class ClientCard extends StatelessWidget {
                     // Nome do cliente
                     Expanded(
                       child: Text(
-                        capitalize(client.name),
+                        capitalize(embaralharString(client.name)),
                         textAlign: TextAlign.start,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

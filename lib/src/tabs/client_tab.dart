@@ -74,29 +74,34 @@ class _ClientTabState extends State<ClientTab> {
 
       body: _clients.isEmpty
           ? const Center(child: Text('Nenhum $clientTitle Cadastrado.'))
-          : RefreshIndicator(
-              onRefresh: _loadClients,
-              child: SingleChildScrollView(
-                child: ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  shrinkWrap: true,
+          : Center(
+              child: SizedBox(
+                width: 400,
+                child: RefreshIndicator(
+                  onRefresh: _loadClients,
+                  child: SingleChildScrollView(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
 
-                  itemCount: _clients.length,
-                  itemBuilder: (context, index) {
-                    final client = _clients[index];
-                    return ClientCard(
-                      client: client,
-                      onTap: () {
-                        Navigator.of(context).pushNamed(
-                          AppRoutes.clientDetail,
-                          arguments: {
-                            'userCode': userCode,
-                            'clientId': client.id,
+                      itemCount: 8, //_clients.length,
+                      itemBuilder: (context, index) {
+                        final client = _clients[0];
+                        return ClientCard(
+                          client: client,
+                          onTap: () {
+                            Navigator.of(context).pushNamed(
+                              AppRoutes.clientDetail,
+                              arguments: {
+                                'userCode': userCode,
+                                'clientId': client.id,
+                              },
+                            );
                           },
                         );
                       },
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             ),
