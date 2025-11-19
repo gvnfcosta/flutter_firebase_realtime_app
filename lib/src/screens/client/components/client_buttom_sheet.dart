@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_firebase_realtime_app/models/client_model.dart';
 import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
 import 'package:flutter_firebase_realtime_app/src/common/birth_date_field.dart';
@@ -203,6 +204,7 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
                 controller: _nameController,
                 icon: Icons.person,
                 label: 'Nome',
+                isEditing: true,
                 validator: (v) => v!.isEmpty ? 'Informe o nome' : null,
               ),
               const SizedBox(height: 4),
@@ -220,7 +222,18 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
                 controller: _weightController,
                 icon: Icons.scale,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9,]')),
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    // substitui ponto por vírgula automaticamente
+                    return newValue.copyWith(
+                      text: newValue.text.replaceAll('.', ','),
+                      selection: newValue.selection,
+                    );
+                  }),
+                ],
                 label: 'Peso (kg)',
+                isEditing: true,
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'Informe o peso' : null,
               ),

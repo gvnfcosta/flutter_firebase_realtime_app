@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../models/client_model.dart';
 import '../../../providers/client_provider.dart';
 import '../../common/custom_text_form_field.dart';
-import '../../common/custom_widgets.dart';
 import '../../config/app_data.dart';
 import 'components/client_head_card.dart';
 import 'components/confirm_delete.dart';
@@ -29,6 +28,8 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
   bool _isEditing = false;
 
   // Controllers
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _birthdayCtrl = TextEditingController();
   final _weightCtrl = TextEditingController();
@@ -44,7 +45,9 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
       final provider = context.read<ClientProvider>();
       final client = await provider.fetchById(widget.userCode, widget.clientId);
 
-      if (client == null && mounted) {
+      if (!mounted) return;
+
+      if (client == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('$clientTitle não encontrado.')),
         );
@@ -52,16 +55,16 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
         return;
       }
 
-      if (mounted) {
-        _client = client;
+      _client = client;
 
-        // Preenche controladores
-        _phoneCtrl.text = client!.phone;
-        _birthdayCtrl.text = client.birthday;
-        _weightCtrl.text = client.weight.toString();
+      // Preenche controladores
+      _nameCtrl.text = client.name;
+      _emailCtrl.text = client.email;
+      _phoneCtrl.text = client.phone;
+      _birthdayCtrl.text = client.birthday;
+      _weightCtrl.text = client.weight.toString().replaceAll('.', ',');
 
-        setState(() => _loading = false);
-      }
+      setState(() => _loading = false);
     } catch (e) {
       debugPrint("Erro ao carregar $clientTitle: $e");
       if (mounted) {
@@ -78,9 +81,13 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
 
     try {
       final updated = _client!.copyWith(
+        name: _nameCtrl.text,
+        email: _emailCtrl.text,
         phone: _phoneCtrl.text,
         birthday: _birthdayCtrl.text,
-        weight: double.tryParse(_weightCtrl.text) ?? _client!.weight,
+        weight:
+            double.tryParse(_weightCtrl.text.replaceAll(',', '.')) ??
+            _client!.weight,
       );
 
       await context.read<ClientProvider>().save(widget.userCode, updated);
@@ -127,101 +134,117 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
     }
   }
 
+  /// =====================================================
+  /// MÉTODO AUXILIAR DE CAMPO
+  /// =====================================================
+  Widget buildField({
+    required IconData icon,
+    required String label,
+    TextEditingController? controller,
+    bool enabled = false,
+    TextInputType? type,
+  }) {
+    return CustomTextFormField(
+      icon: icon,
+      label: label,
+      controller: controller,
+      isEditing: enabled, // habilita edição
+      keyboardType: type,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    if (_loading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Perfil do Usuário')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_client == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Perfil do Usuário')),
-        body: const Center(child: Text('Cliente não encontrado.')),
-      );
-    }
-
-    final c = _client!;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Perfil do Usuário'),
+        title: const Text('Dados do Cliente'),
         actions: [
-          IconButton(
-            icon: Icon(
-              _isEditing ? Icons.check : Icons.edit,
-              color: Colors.orange,
+          if (!_loading && _client != null) ...[
+            IconButton(
+              icon: Icon(
+                _isEditing ? Icons.check : Icons.edit,
+                color: Colors.orange,
+              ),
+              onPressed: () {
+                if (_isEditing) {
+                  _saveClient();
+                } else {
+                  setState(() => _isEditing = true);
+                }
+              },
             ),
-            onPressed: () {
-              if (_isEditing) {
-                _saveClient();
-              } else {
-                setState(() => _isEditing = true);
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: _onDelete,
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            ClientHeaderCard(c),
-            const SizedBox(height: 20),
-
-            // TELEFONE
-            CustomTextFormField(
-              icon: Icons.phone,
-              label: "Telefone",
-              controller: _phoneCtrl,
-              readOnly: !_isEditing,
-              keyboardType: TextInputType.phone,
-              onChanged: (_) {},
-              isEditing: _isEditing,
-            ),
-
-            // NASCIMENTO
-            CustomTextFormField(
-              icon: Icons.date_range,
-              label: "Nascimento",
-              controller: _birthdayCtrl,
-              readOnly: !_isEditing,
-              isEditing: _isEditing,
-              onTap: _isEditing
-                  ? () async {
-                      // opcional: você pode abrir um datepicker se quiser
-                    }
-                  : null,
-            ),
-
-            // PESO
-            CustomTextFormField(
-              icon: Icons.monitor_weight,
-              label: "Peso (kg)",
-              controller: _weightCtrl,
-              keyboardType: TextInputType.number,
-              readOnly: !_isEditing,
-              isEditing: _isEditing,
-            ),
-
-            // CÓDIGO DO CLIENTE
-            CustomTextFormField(
-              icon: Icons.code,
-              label: "Código",
-              initialValue: c.id,
-              readOnly: true,
-              isEditing: _isEditing,
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: _onDelete,
             ),
           ],
-        ),
+        ],
+      ),
+      body: Builder(
+        builder: (_) {
+          if (_loading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (_client == null) {
+            return const Center(child: Text('Cliente não encontrado.'));
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                ClientHeaderCard(_client!),
+                const SizedBox(height: 20),
+
+                // Campos
+                buildField(
+                  icon: Icons.person,
+                  label: "Nome",
+                  controller: _nameCtrl,
+                  enabled: _isEditing,
+                ),
+
+                buildField(
+                  icon: Icons.email,
+                  label: "Email",
+                  controller: _emailCtrl,
+                  enabled: _isEditing,
+                ),
+
+                buildField(
+                  icon: Icons.phone,
+                  label: "Telefone",
+                  controller: _phoneCtrl,
+                  enabled: _isEditing,
+                  type: TextInputType.phone,
+                ),
+
+                buildField(
+                  icon: Icons.date_range,
+                  label: "Nascimento",
+                  controller: _birthdayCtrl,
+                  enabled: _isEditing,
+                ),
+
+                buildField(
+                  icon: Icons.scale,
+                  label: "Peso (kg)",
+                  controller: _weightCtrl,
+                  enabled: _isEditing,
+                  type: TextInputType.number,
+                ),
+
+                // Código (somente leitura)
+                CustomTextFormField(
+                  icon: Icons.code,
+                  label: "Código",
+                  initialValue: _client!.id,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -9,13 +9,12 @@ class CustomTextFormField extends StatefulWidget {
   final bool obscureText;
   final List<TextInputFormatter>? inputFormatters;
   final String? initialValue;
-  final bool readOnly;
+  final bool isEditing;
   final String? Function(String?)? validator;
   final TextEditingController? controller;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final VoidCallback? onTap;
-  final bool isEditing;
   final void Function(String)? onChanged;
 
   const CustomTextFormField({
@@ -26,13 +25,12 @@ class CustomTextFormField extends StatefulWidget {
     this.obscureText = false,
     this.inputFormatters,
     this.initialValue,
-    this.readOnly = false,
+    this.isEditing = false,
     this.validator,
     this.controller,
     this.keyboardType,
     this.textInputAction = TextInputAction.next,
     this.onTap,
-    this.isEditing = false,
     this.onChanged,
   });
 
@@ -67,31 +65,8 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     super.dispose();
   }
 
-  /// ==== FORMATADOR PARA ACEITAR VÍRGULAS ====
-  TextInputFormatter decimalCommaFormatter() {
-    return TextInputFormatter.withFunction((oldValue, newValue) {
-      String v = newValue.text.replaceAll(',', '.');
-
-      // permite apenas 0-9 , .
-      final reg = RegExp(r'^[0-9]*[,.]?[0-9]*$');
-      if (!reg.hasMatch(newValue.text)) {
-        return oldValue;
-      }
-
-      return newValue.copyWith(
-        text: v.replaceAll('.', ','),
-        selection: newValue.selection,
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final List<TextInputFormatter> mergedFormatters = [
-      decimalCommaFormatter(),
-      ...?widget.inputFormatters,
-    ];
-
     final bool isFocused = _focusNode.hasFocus;
     final borderColor = widget.isEditing ? editColor : Colors.grey.shade300;
 
@@ -103,7 +78,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           return TextFormField(
             controller: _controller,
             focusNode: _focusNode,
-            readOnly: widget.readOnly,
+            readOnly: !widget.isEditing,
             obscureText: value,
             validator: widget.validator,
             keyboardType: widget.keyboardType,
@@ -115,7 +90,8 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               color: isFocused ? Colors.black : Colors.black87,
               fontWeight: isFocused ? FontWeight.bold : FontWeight.normal,
             ),
-            inputFormatters: mergedFormatters,
+            inputFormatters: widget.inputFormatters,
+            // inputFormatters: mergedFormatters,
             decoration: InputDecoration(
               prefixIcon: CircleAvatar(
                 backgroundColor: Colors.teal.withValues(alpha: 0.1),

@@ -20,6 +20,7 @@ class PhoneFieldWidget extends StatelessWidget {
     return CustomTextFormField(
       label: 'Telefone',
       controller: controller,
+      isEditing: true,
       icon: Icons.phone,
       keyboardType: TextInputType.phone,
       inputFormatters: [phoneFormatter],

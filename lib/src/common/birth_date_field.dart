@@ -42,6 +42,7 @@ class _BirthDateFieldState extends State<BirthDateField> {
           width: 250,
           child: CustomTextFormField(
             controller: widget.controller,
+            isEditing: true,
             keyboardType: TextInputType.number,
             inputFormatters: [_dateMask],
             label: 'Data de Nascimento',
