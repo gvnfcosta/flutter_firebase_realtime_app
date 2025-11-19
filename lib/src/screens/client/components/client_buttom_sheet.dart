@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_firebase_realtime_app/models/client_model.dart';
@@ -11,14 +12,12 @@ import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:flutter_firebase_realtime_app/src/screens/sign_in/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 
-import '../components/phone_field_widget.dart';
+import '../../components/phone_field_widget.dart';
 
 class ClientBottomSheet {
-  static Future<bool?> show(
-    BuildContext context, {
-    required String userCode,
-    String? clientId,
-  }) {
+  late final String userCode = FirebaseAuth.instance.currentUser!.uid;
+
+  static Future<bool?> show(BuildContext context, {String? clientId}) {
     // 👇 return direto, sem "await"
     return showModalBottomSheet<bool>(
       context: context,
@@ -27,17 +26,15 @@ class ClientBottomSheet {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) =>
-          _ClientBottomSheetContent(userCode: userCode, clientId: clientId),
+      builder: (context) => _ClientBottomSheetContent(clientId: clientId),
     );
   }
 }
 
 class _ClientBottomSheetContent extends StatefulWidget {
-  final String userCode;
   final String? clientId;
 
-  const _ClientBottomSheetContent({required this.userCode, this.clientId});
+  const _ClientBottomSheetContent({this.clientId});
 
   @override
   State<_ClientBottomSheetContent> createState() =>
@@ -51,11 +48,14 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
   final _phoneController = TextEditingController();
   final _birthdayController = TextEditingController();
   final _weightController = TextEditingController();
+  late final String userCode;
+
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
+    userCode = FirebaseAuth.instance.currentUser!.uid;
     if (widget.clientId != null) {
       _loadClientData();
     }
@@ -65,13 +65,10 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
     setState(() => _loading = true);
     try {
       final provider = context.read<ClientProvider>();
-      final client = await provider.fetchClientById(
-        widget.userCode,
-        widget.clientId!,
-      );
+      final client = await provider.fetchById(userCode, widget.clientId!);
       if (client != null) {
         _nameController.text = client.name;
-        _emailController.text = client.name;
+        _emailController.text = client.email;
         _phoneController.text = client.phone;
         _birthdayController.text = client.birthday;
         _weightController.text = client.weight.toString();
@@ -101,12 +98,18 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
         email: _emailController.text.trim(),
         phone: _phoneController.text.trim(),
         birthday: _birthdayController.text.trim(),
-        userCode: widget.userCode,
+        userCode: userCode,
         weight: double.tryParse(_weightController.text.trim()) ?? 0.0,
       );
 
       final user = FirebaseAuth.instance.currentUser;
-      await context.read<ClientProvider>().saveClient(user!.uid, client);
+
+      debugPrint('DEBUG: currentUser = $user');
+      debugPrint('DEBUG: currentUser.uid = ${user?.uid}');
+      debugPrint('DEBUG: userCode (local) = $userCode');
+      debugPrint('DEBUG: saving path = users/$userCode/clients/${client.id}');
+
+      await context.read<ClientProvider>().save(user!.uid, client);
 
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -117,7 +120,7 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
       Navigator.pushNamed(
         context,
         AppRoutes.clientDetail,
-        arguments: {'userCode': widget.userCode, 'clientId': client.id},
+        arguments: {'userCode': userCode, 'clientId': client.id},
       );
     } catch (e) {
       debugPrint("Erro ao salvar $clientTitle: $e");
@@ -128,6 +131,24 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
       }
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> quickWriteTest() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugPrint('quickWriteTest: user null');
+      return;
+    }
+    final uid = user.uid;
+    try {
+      await FirebaseFirestore.instance.collection('debug_tests').doc(uid).set({
+        'ts': FieldValue.serverTimestamp(),
+        'uid': uid,
+      });
+      debugPrint('quickWriteTest: OK saved debug_tests/$uid');
+    } catch (e) {
+      debugPrint('quickWriteTest: ERRO -> $e');
     }
   }
 
@@ -185,12 +206,7 @@ class _ClientBottomSheetContentState extends State<_ClientBottomSheetContent> {
                 validator: (v) => v!.isEmpty ? 'Informe o nome' : null,
               ),
               const SizedBox(height: 4),
-              // CustomTextFormField(
-              //   controller: _phoneController,
-              //   keyboardType: TextInputType.phone,
-              //   label: 'Telefone',
-              //   validator: (v) => phoneValidator(v),
-              // ),
+
               PhoneFieldWidget(
                 controller: _phoneController,
                 onChanged: (value) {

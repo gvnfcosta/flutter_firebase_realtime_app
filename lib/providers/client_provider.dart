@@ -1,68 +1,91 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_firebase_realtime_app/models/client_model.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
 
 class ClientProvider with ChangeNotifier {
-  final dbRef = FirebaseDatabase.instance.ref();
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  /// Lista todos os $clientTitles do usuário logado
-  Future<List<ClientModel>> fetchAllClients({required String userCode}) async {
+  List<ClientModel> _clients = [];
+  List<ClientModel> get clients => _clients;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  /// Carrega todos os clientes do usuário logado
+  Future<void> load(String userCode) async {
     try {
-      final snapshot = await dbRef.child('users/$userCode/clients').get();
+      _isLoading = true;
+      notifyListeners();
 
-      if (!snapshot.exists) return [];
+      final querySnapshot = await firestore
+          .collection('users')
+          .doc(userCode)
+          .collection('clients')
+          .get();
 
-      final clientsMap = Map<String, dynamic>.from(snapshot.value as Map);
-      final clients = clientsMap.entries.map((entry) {
-        final data = Map<String, dynamic>.from(entry.value);
-        return ClientModel.fromMap(data);
-      }).toList();
+      _clients = querySnapshot.docs
+          .map((doc) => ClientModel.fromMap(doc.data()))
+          .toList();
 
-      return clients;
+      _clients.sort((a, b) => a.name.compareTo(b.name));
     } catch (e) {
-      debugPrint('Erro ao buscar $clientTitle: $e');
-      return [];
+      debugPrint('Erro ao buscar clientes: $e');
+      rethrow; // mantém rastreabilidade do erro
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  /// Busca um $clientTitle específico pelo ID
-  Future<ClientModel?> fetchClientById(String userCode, String clientId) async {
+  /// Busca um cliente específico pelo ID
+  Future<ClientModel?> fetchById(String userCode, String clientId) async {
     try {
-      final snapshot = await dbRef
-          .child('users/$userCode/clients/$clientId')
+      final docSnapshot = await firestore
+          .collection('users')
+          .doc(userCode)
+          .collection('clients')
+          .doc(clientId)
           .get();
 
-      if (!snapshot.exists) return null;
+      if (!docSnapshot.exists) return null;
 
-      final data = Map<String, dynamic>.from(snapshot.value as Map);
-      return ClientModel.fromMap(data);
+      return ClientModel.fromMap(docSnapshot.data()!);
     } catch (e) {
-      debugPrint('Erro ao buscar $clientTitle: $e');
+      debugPrint('Erro ao buscar cliente: $e');
       return null;
     }
   }
 
-  /// Salva ou atualiza um $clientTitle
-  Future<void> saveClient(String userCode, ClientModel client) async {
+  /// Salva ou atualiza um cliente
+  Future<void> save(String userCode, ClientModel client) async {
     try {
-      await dbRef
-          .child('users/$userCode/clients/${client.id}')
+      await firestore
+          .collection('users')
+          .doc(userCode)
+          .collection('clients')
+          .doc(client.id)
           .set(client.toMap());
-      notifyListeners();
+
+      await load(userCode); // garante atualização automática
     } catch (e) {
-      debugPrint('Erro ao salvar $clientTitle: $e');
+      debugPrint('Erro ao salvar cliente: $e');
       rethrow;
     }
   }
 
-  /// Exclui um $clientTitle
-  Future<void> deleteClient(String userCode, String clientId) async {
+  /// Exclui um cliente
+  Future<void> delete(String userCode, String clientId) async {
     try {
-      await dbRef.child('users/$userCode/clients/$clientId').remove();
-      notifyListeners();
+      await firestore
+          .collection('users')
+          .doc(userCode)
+          .collection('clients')
+          .doc(clientId)
+          .delete();
+
+      await load(userCode); // garante remoção da lista automaticamente
     } catch (e) {
-      debugPrint('Erro ao excluir $clientTitle: $e');
+      debugPrint('Erro ao excluir cliente: $e');
       rethrow;
     }
   }

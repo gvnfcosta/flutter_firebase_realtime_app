@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_firebase_realtime_app/models/client_model.dart';
 import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
 
 import 'package:flutter_firebase_realtime_app/src/config/app_colors.dart';
-import 'package:flutter_firebase_realtime_app/src/screens/components/embaralhar_string.dart';
 
 class ClientCard extends StatelessWidget {
-  final dynamic client;
+  final ClientModel client;
   final VoidCallback? onTap;
 
   const ClientCard({super.key, required this.client, this.onTap});
@@ -56,7 +56,7 @@ class ClientCard extends StatelessWidget {
                     // Nome do cliente
                     Expanded(
                       child: Text(
-                        capitalize(embaralharString(client.name)),
+                        capitalize(client.name),
                         textAlign: TextAlign.start,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,

@@ -6,7 +6,6 @@ class CustomTextFormField extends StatefulWidget {
   final IconData? icon;
   final Color? iconColor;
   final String label;
-  final String nome;
   final bool obscureText;
   final List<TextInputFormatter>? inputFormatters;
   final String? initialValue;
@@ -23,7 +22,6 @@ class CustomTextFormField extends StatefulWidget {
     this.icon,
     this.iconColor,
     required this.label,
-    this.nome = '',
     this.obscureText = false,
     this.inputFormatters,
     this.initialValue,
@@ -85,16 +83,13 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             onTap: widget.onTap,
             onChanged: widget.onChanged,
             decoration: InputDecoration(
-              prefixIcon: Icon(
-                widget.icon,
-                size: 22,
-                color: widget.iconColor ?? AppColors.foregroundIcon,
+              prefixIcon: CircleAvatar(
+                backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                child: Icon(widget.icon, color: Colors.teal),
               ),
               suffixIcon: widget.obscureText
                   ? IconButton(
-                      onPressed: () {
-                        _isObscure.value = !_isObscure.value;
-                      },
+                      onPressed: () => _isObscure.value = !_isObscure.value,
                       icon: Icon(
                         value ? Icons.visibility : Icons.visibility_off,
                         color: widget.iconColor ?? AppColors.foregroundIcon,
@@ -114,7 +109,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
               fillColor: Colors.white,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey.shade400),
+                borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),

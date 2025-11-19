@@ -16,22 +16,22 @@ class UserModel extends PersonModel {
 
   @override
   Map<String, dynamic> toMap() {
-    return {
-      ...super.toMap(),
-      'code': code,
-      'logoUrl': logoUrl,
-      'level': level,
-    };
+    return {...super.toMap(), 'code': code, 'logoUrl': logoUrl, 'level': level};
   }
 
-  factory UserModel.fromMap(Map<String, dynamic> map) {
+  factory UserModel.fromMap({
+    required Map<String, dynamic> map,
+    required String id,
+  }) {
     return UserModel(
-      id: map['id'] ?? '',
+      id: id,
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       code: map['code'] ?? '',
       logoUrl: map['logoUrl'] ?? '',
-      level: map['level'] ?? '',
+      level: map['level'] is int
+          ? map['level']
+          : int.tryParse(map['level']?.toString() ?? '') ?? 1,
     );
   }
 
