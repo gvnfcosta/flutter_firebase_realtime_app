@@ -26,7 +26,8 @@ class DeleteAccountService {
 
       // 🧹 Remove conta do Auth
       await user.delete();
-      AuthService.logout(context);
+
+      if (context.mounted) AuthService.logout(context);
 
       // 🔒 Limpa cache e estado local
       userProvider.clearUser();

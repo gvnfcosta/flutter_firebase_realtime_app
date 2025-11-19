@@ -1,14 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 
 import 'package:flutter_firebase_realtime_app/models/user_model.dart';
 
 class UserProvider with ChangeNotifier {
   UserModel? _user;
-  final dbRef = FirebaseDatabase.instance.ref();
 
   UserModel? get user => _user;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   void setUser(UserModel user) {
     _user = user;
@@ -20,34 +21,38 @@ class UserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Busca os dados do usuário autenticado
+  // ======================================================
+  // BUSCAR USUÁRIO
+  // ======================================================
   Future<UserModel?> fetchUserData(String uid) async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
 
-    if (currentUid == null || uid != currentUid) {
+    if (currentUid == null || currentUid != uid) {
       throw Exception(
         "Acesso negado: UID não corresponde ao usuário autenticado",
       );
     }
 
     try {
-      final snapshot = await dbRef.child('users/$uid').get();
+      final doc = await _firestore.collection('users').doc(uid).get();
 
-      _user = snapshot.exists
-          ? UserModel.fromMap(Map<String, dynamic>.from(snapshot.value as Map))
-          : null;
+      if (doc.exists) {
+        _user = UserModel.fromMap(map: doc.data()!, id: doc.id);
+      }
 
       notifyListeners();
-      return _user; // ✅ retorna o modelo
+      return _user;
     } catch (e) {
-      debugPrint("Erro ao buscar dados do usuário: $e");
+      debugPrint("Erro ao buscar usuário: $e");
       _user = null;
       notifyListeners();
-      return null; // ✅ evita erro ao tentar acessar depois
+      return null;
     }
   }
 
-  // Salva ou atualiza os dados do usuário autenticado
+  // ======================================================
+  // SALVAR / ATUALIZAR USUÁRIO
+  // ======================================================
   Future<void> saveUserData(UserModel user) async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
 
@@ -56,7 +61,7 @@ class UserProvider with ChangeNotifier {
     }
 
     try {
-      await dbRef.child('users/${user.id}').set(user.toMap());
+      await _firestore.collection('users').doc(user.id).set(user.toMap());
       _user = user;
       notifyListeners();
     } catch (e) {
@@ -65,19 +70,20 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  // Exclui dados do usuario do Firebase
+  // ======================================================
+  // EXCLUIR USUÁRIO
+  // ======================================================
   Future<void> deleteUserData(String uid) async {
     try {
-      await dbRef.child('users/$uid').remove();
-      debugPrint("✅ Dados do usuário $uid removidos do Realtime Database");
+      await _firestore.collection('users').doc(uid).delete();
       clearUser();
+      debugPrint("✅ Dados do usuário $uid removidos do Firestore");
     } catch (e) {
-      debugPrint("Erro ao excluir dados do usuário: $e");
+      debugPrint("Erro ao excluir usuário: $e");
       rethrow;
     }
   }
 
-  // Limpa o estado quando o provider for descartado
   @override
   void dispose() {
     _user = null;

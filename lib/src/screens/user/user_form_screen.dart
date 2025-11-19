@@ -127,11 +127,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
                 validator: nameValidator,
               ),
               const SizedBox(height: 16),
-              CustomTextFormField(
-                initialValue: _userEmail,
-                label: 'Email',
-                readOnly: true,
-              ),
+              CustomTextFormField(initialValue: _userEmail, label: 'Email'),
               const SizedBox(height: 60),
               SizedBox(
                 width: 300,

@@ -6,11 +6,10 @@ class CustomTextFormField extends StatefulWidget {
   final IconData? icon;
   final Color? iconColor;
   final String label;
-  final String nome;
   final bool obscureText;
   final List<TextInputFormatter>? inputFormatters;
   final String? initialValue;
-  final bool readOnly;
+  final bool isEditing;
   final String? Function(String?)? validator;
   final TextEditingController? controller;
   final TextInputType? keyboardType;
@@ -23,11 +22,10 @@ class CustomTextFormField extends StatefulWidget {
     this.icon,
     this.iconColor,
     required this.label,
-    this.nome = '',
     this.obscureText = false,
     this.inputFormatters,
     this.initialValue,
-    this.readOnly = false,
+    this.isEditing = false,
     this.validator,
     this.controller,
     this.keyboardType,
@@ -44,6 +42,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   late final ValueNotifier<bool> _isObscure;
+  Color editColor = Colors.orange;
 
   @override
   void initState() {
@@ -51,6 +50,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     _controller =
         widget.controller ??
         TextEditingController(text: widget.initialValue ?? '');
+
     _focusNode = FocusNode();
     _isObscure = ValueNotifier(widget.obscureText);
 
@@ -67,6 +67,9 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isFocused = _focusNode.hasFocus;
+    final borderColor = widget.isEditing ? editColor : Colors.grey.shade300;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ValueListenableBuilder<bool>(
@@ -75,26 +78,28 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           return TextFormField(
             controller: _controller,
             focusNode: _focusNode,
-            readOnly: widget.readOnly,
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
-            inputFormatters: widget.inputFormatters,
+            readOnly: !widget.isEditing,
             obscureText: value,
             validator: widget.validator,
             keyboardType: widget.keyboardType,
             textInputAction: widget.textInputAction,
             onTap: widget.onTap,
             onChanged: widget.onChanged,
+            style: TextStyle(
+              fontSize: 14,
+              color: isFocused ? Colors.black : Colors.black87,
+              fontWeight: isFocused ? FontWeight.bold : FontWeight.normal,
+            ),
+            inputFormatters: widget.inputFormatters,
+            // inputFormatters: mergedFormatters,
             decoration: InputDecoration(
-              prefixIcon: Icon(
-                widget.icon,
-                size: 22,
-                color: widget.iconColor ?? AppColors.foregroundIcon,
+              prefixIcon: CircleAvatar(
+                backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                child: Icon(widget.icon, color: Colors.teal),
               ),
               suffixIcon: widget.obscureText
                   ? IconButton(
-                      onPressed: () {
-                        _isObscure.value = !_isObscure.value;
-                      },
+                      onPressed: () => _isObscure.value = !_isObscure.value,
                       icon: Icon(
                         value ? Icons.visibility : Icons.visibility_off,
                         color: widget.iconColor ?? AppColors.foregroundIcon,
@@ -104,30 +109,34 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   : null,
               labelText: widget.label,
               labelStyle: TextStyle(
-                color: _focusNode.hasFocus
-                    ? AppColors.primary
-                    : Colors.grey.shade600,
+                color: widget.isEditing ? editColor : Colors.grey.shade600,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
+
               filled: true,
               fillColor: Colors.white,
+
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey.shade400),
+                borderSide: BorderSide(color: borderColor),
               ),
+
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: AppColors.primary, width: 2),
+                borderSide: BorderSide(color: borderColor, width: 2),
               ),
+
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
+
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
+
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 18.0,
                 horizontal: 16.0,

@@ -17,8 +17,8 @@ class ClientApp extends StatelessWidget {
       title: 'Client App',
       debugShowCheckedModeBanner: false,
       theme: appTheme,
-      // initialRoute: AppRoutes.home,
-      initialRoute: AppRoutes.signIn,
+      initialRoute: AppRoutes.home,
+      // initialRoute: AppRoutes.signIn,
       // initialRoute: AppRoutes.splash,
       onGenerateRoute: (settings) {
         switch (settings.name) {

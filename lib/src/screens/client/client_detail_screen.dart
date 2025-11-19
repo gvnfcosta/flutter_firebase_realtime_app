@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_firebase_realtime_app/models/client_model.dart';
-import 'package:flutter_firebase_realtime_app/providers/client_provider.dart';
-import 'package:flutter_firebase_realtime_app/src/common/custom_widgets.dart';
-import 'package:flutter_firebase_realtime_app/src/common/custon_functions.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_data.dart';
-import 'package:flutter_firebase_realtime_app/src/config/app_routes.dart';
 import 'package:provider/provider.dart';
+
+import '../../../models/client_model.dart';
+import '../../../providers/client_provider.dart';
+import '../../common/custom_text_form_field.dart';
+import '../../config/app_data.dart';
+import 'components/client_head_card.dart';
+import 'components/confirm_delete.dart';
 
 class ClientDetailScreen extends StatefulWidget {
   final String userCode;
@@ -24,6 +25,14 @@ class ClientDetailScreen extends StatefulWidget {
 class _ClientDetailScreenState extends State<ClientDetailScreen> {
   ClientModel? _client;
   bool _loading = true;
+  bool _isEditing = false;
+
+  // Controllers
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _birthdayCtrl = TextEditingController();
+  final _weightCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -34,12 +43,11 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
   Future<void> _loadClientData() async {
     try {
       final provider = context.read<ClientProvider>();
-      final client = await provider.fetchClientById(
-        widget.userCode,
-        widget.clientId,
-      );
+      final client = await provider.fetchById(widget.userCode, widget.clientId);
 
-      if (client == null && mounted) {
+      if (!mounted) return;
+
+      if (client == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('$clientTitle não encontrado.')),
         );
@@ -47,216 +55,196 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
         return;
       }
 
-      if (mounted) {
-        setState(() {
-          _client = client;
-          _loading = false;
-        });
-      }
+      _client = client;
+
+      // Preenche controladores
+      _nameCtrl.text = client.name;
+      _emailCtrl.text = client.email;
+      _phoneCtrl.text = client.phone;
+      _birthdayCtrl.text = client.birthday;
+      _weightCtrl.text = client.weight.toString().replaceAll('.', ',');
+
+      setState(() => _loading = false);
     } catch (e) {
       debugPrint("Erro ao carregar $clientTitle: $e");
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao carregar dados do $clientTitle.'),
-          ),
+          const SnackBar(content: Text('Erro ao carregar dados do cliente.')),
         );
       }
     }
   }
 
-  Future<void> _goToClientForm() async {
+  Future<void> _saveClient() async {
     if (_client == null) return;
 
-    await Navigator.pushNamed(
-      context,
-      AppRoutes.clientForm,
-      arguments: {'userCode': widget.userCode, 'clientId': widget.clientId},
-    );
+    try {
+      final updated = _client!.copyWith(
+        name: _nameCtrl.text,
+        email: _emailCtrl.text,
+        phone: _phoneCtrl.text,
+        birthday: _birthdayCtrl.text,
+        weight:
+            double.tryParse(_weightCtrl.text.replaceAll(',', '.')) ??
+            _client!.weight,
+      );
 
-    // Recarrega após edição
-    _loadClientData();
+      await context.read<ClientProvider>().save(widget.userCode, updated);
+
+      setState(() {
+        _client = updated;
+        _isEditing = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Dados atualizados com sucesso!")),
+      );
+    } catch (e) {
+      debugPrint('Erro ao salvar cliente: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao salvar: $e')));
+    }
   }
 
-  Future<void> _deleteClient() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Excluir $clientTitle'),
-        content: Text(
-          'Confirma exclusão de ${_client!.name}?',
-          style: TextStyle(color: Colors.red),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red, // fundo vermelho
-              foregroundColor: Colors.white, // texto branco
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _onDelete() async {
+    if (_client == null) return;
 
-    if (confirm != true || !mounted) return;
+    if (!await confirmDelete(context, _client!.name)) return;
 
     try {
-      await context.read<ClientProvider>().deleteClient(
+      await context.read<ClientProvider>().delete(
         widget.userCode,
         widget.clientId,
       );
 
       if (!mounted) return;
+
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('$clientTitle excluído.')));
+      ).showSnackBar(const SnackBar(content: Text('Cliente excluído.')));
 
       Navigator.pop(context);
     } catch (e) {
-      debugPrint("Erro ao excluir $clientTitle: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir $clientTitle: $e')),
-        );
-      }
+      debugPrint('Erro ao excluir: $e');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao excluir: $e')));
     }
+  }
+
+  /// =====================================================
+  /// MÉTODO AUXILIAR DE CAMPO
+  /// =====================================================
+  Widget buildField({
+    required IconData icon,
+    required String label,
+    TextEditingController? controller,
+    bool enabled = false,
+    TextInputType? type,
+  }) {
+    return CustomTextFormField(
+      icon: icon,
+      label: label,
+      controller: controller,
+      isEditing: enabled, // habilita edição
+      keyboardType: type,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    if (_loading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Perfil do Usuário')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (_client == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Perfil do Usuário')),
-        body: const Center(child: Text('Cliente não encontrado.')),
-      );
-    }
-
-    final client = _client!;
-
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Perfil do Usuário'),
-        centerTitle: true,
-        elevation: 0,
+        title: const Text('Dados do Cliente'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_rounded),
-            tooltip: 'Editar',
-            onPressed: _goToClientForm,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded),
-            tooltip: 'Excluir',
-            onPressed: _deleteClient,
-          ),
+          if (!_loading && _client != null) ...[
+            IconButton(
+              icon: Icon(
+                _isEditing ? Icons.check : Icons.edit,
+                color: Colors.orange,
+              ),
+              onPressed: () {
+                if (_isEditing) {
+                  _saveClient();
+                } else {
+                  setState(() => _isEditing = true);
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: _onDelete,
+            ),
+          ],
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _buildHeaderCard(context, client),
-            const SizedBox(height: 20),
-            InfoCard(
-              icon: Icons.phone_rounded,
-              label: 'Telefone',
-              value: client.phone,
-            ),
-            InfoCard(
-              icon: Icons.cake_rounded,
-              label: 'Aniversário',
-              value: client.birthday,
-            ),
-            InfoCard(
-              icon: Icons.confirmation_number_rounded,
-              label: 'Código do Usuário',
-              value: client.userCode,
-            ),
-            InfoCard(
-              icon: Icons.monitor_weight_rounded,
-              label: 'Peso',
-              value: '${client.weight.toStringAsFixed(1)} kg',
-            ),
-            const SizedBox(height: 40),
-            Text(
-              'ID Interno: ${client.id}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.outline,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      body: Builder(
+        builder: (_) {
+          if (_loading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-  Widget _buildHeaderCard(BuildContext context, ClientModel client) {
-    final theme = Theme.of(context);
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 38,
-              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.2),
-              child: Text(
-                getInitials(client.name),
-                style: TextStyle(
-                  fontSize: 28,
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
+          if (_client == null) {
+            return const Center(child: Text('Cliente não encontrado.'));
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                ClientHeaderCard(_client!),
+                const SizedBox(height: 20),
+
+                // Campos
+                buildField(
+                  icon: Icons.person,
+                  label: "Nome",
+                  controller: _nameCtrl,
+                  enabled: _isEditing,
                 ),
-              ),
+
+                buildField(
+                  icon: Icons.email,
+                  label: "Email",
+                  controller: _emailCtrl,
+                  enabled: _isEditing,
+                ),
+
+                buildField(
+                  icon: Icons.phone,
+                  label: "Telefone",
+                  controller: _phoneCtrl,
+                  enabled: _isEditing,
+                  type: TextInputType.phone,
+                ),
+
+                buildField(
+                  icon: Icons.date_range,
+                  label: "Nascimento",
+                  controller: _birthdayCtrl,
+                  enabled: _isEditing,
+                ),
+
+                buildField(
+                  icon: Icons.scale,
+                  label: "Peso (kg)",
+                  controller: _weightCtrl,
+                  enabled: _isEditing,
+                  type: TextInputType.number,
+                ),
+
+                // Código (somente leitura)
+                CustomTextFormField(
+                  icon: Icons.code,
+                  label: "Código",
+                  initialValue: _client!.id,
+                ),
+              ],
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    client.name,
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    client.email,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.outline,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
