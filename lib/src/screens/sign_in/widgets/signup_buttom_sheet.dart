@@ -58,7 +58,7 @@ class _SignUpContentState extends State<_SignUpContent> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.56,
+      initialChildSize: 0.6,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       builder: (context, scrollController) {

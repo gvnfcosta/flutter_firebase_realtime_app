@@ -113,7 +113,7 @@ final ThemeData appTheme = ThemeData(
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
       foregroundColor: _colorScheme.secondary, // 🔹 cor do texto e ícone
-      textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      textStyle: const TextStyle(fontWeight: FontWeight.w400, fontSize: 14),
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),

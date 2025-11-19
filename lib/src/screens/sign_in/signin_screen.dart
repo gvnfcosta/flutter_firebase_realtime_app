@@ -250,7 +250,6 @@ class _SignInScreenState extends State<SignInScreen> {
                 validator: emailValidator, // valida formato do email
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 8),
 
               // Campo de senha
               CustomTextFormField(
@@ -260,8 +259,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 obscureText: _obscurePass, // oculta caracteres
                 validator: passwordValidator, // valida comprimento mínimo
               ),
-              const SizedBox(height: 24),
-
+              SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -271,36 +269,40 @@ class _SignInScreenState extends State<SignInScreen> {
                     isLoading: _loading,
                     onPressed: _handleLogin,
                   ),
-                  const SizedBox(height: 12),
                   Column(
                     children: [
                       // Botão para criar nova conta (abre bottom sheet)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: _loading
-                              ? null
-                              : () => SignUpBottomSheet.show(
-                                  context,
-                                ), // abre modal de cadastro
-                          child: Text(
-                            newAccount,
-                            style: TextStyle(color: AppColors.textTertiary),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
                           ),
                         ),
+                        onPressed: _loading
+                            ? null
+                            : () => SignUpBottomSheet.show(
+                                context,
+                              ), // abre modal de cadastro
+                        child: Text(
+                          newAccount,
+                          style: TextStyle(color: AppColors.textTertiary),
+                        ),
                       ),
-
                       // Botão "Esqueci a senha?"
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: _loading
-                              ? null
-                              : () => _showForgotPasswordDialog(context),
-                          child: Text(
-                            forgotPassword,
-                            style: TextStyle(color: AppColors.textTertiary),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          visualDensity: VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
                           ),
+                        ),
+                        onPressed: _loading
+                            ? null
+                            : () => _showForgotPasswordDialog(context),
+                        child: Text(
+                          forgotPassword,
+                          style: TextStyle(color: AppColors.textTertiary),
                         ),
                       ),
                     ],
