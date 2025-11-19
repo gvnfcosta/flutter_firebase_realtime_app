@@ -15,6 +15,7 @@ class CustomTextFormField extends StatefulWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final VoidCallback? onTap;
+  final bool isEditing;
   final void Function(String)? onChanged;
 
   const CustomTextFormField({
@@ -31,6 +32,7 @@ class CustomTextFormField extends StatefulWidget {
     this.keyboardType,
     this.textInputAction = TextInputAction.next,
     this.onTap,
+    this.isEditing = false,
     this.onChanged,
   });
 
@@ -42,6 +44,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
   late final ValueNotifier<bool> _isObscure;
+  Color editColor = Colors.orange;
 
   @override
   void initState() {
@@ -49,6 +52,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     _controller =
         widget.controller ??
         TextEditingController(text: widget.initialValue ?? '');
+
     _focusNode = FocusNode();
     _isObscure = ValueNotifier(widget.obscureText);
 
@@ -63,8 +67,34 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
     super.dispose();
   }
 
+  /// ==== FORMATADOR PARA ACEITAR VÍRGULAS ====
+  TextInputFormatter decimalCommaFormatter() {
+    return TextInputFormatter.withFunction((oldValue, newValue) {
+      String v = newValue.text.replaceAll(',', '.');
+
+      // permite apenas 0-9 , .
+      final reg = RegExp(r'^[0-9]*[,.]?[0-9]*$');
+      if (!reg.hasMatch(newValue.text)) {
+        return oldValue;
+      }
+
+      return newValue.copyWith(
+        text: v.replaceAll('.', ','),
+        selection: newValue.selection,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final List<TextInputFormatter> mergedFormatters = [
+      decimalCommaFormatter(),
+      ...?widget.inputFormatters,
+    ];
+
+    final bool isFocused = _focusNode.hasFocus;
+    final borderColor = widget.isEditing ? editColor : Colors.grey.shade300;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ValueListenableBuilder<bool>(
@@ -74,14 +104,18 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
             controller: _controller,
             focusNode: _focusNode,
             readOnly: widget.readOnly,
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
-            inputFormatters: widget.inputFormatters,
             obscureText: value,
             validator: widget.validator,
             keyboardType: widget.keyboardType,
             textInputAction: widget.textInputAction,
             onTap: widget.onTap,
             onChanged: widget.onChanged,
+            style: TextStyle(
+              fontSize: 14,
+              color: isFocused ? Colors.black : Colors.black87,
+              fontWeight: isFocused ? FontWeight.bold : FontWeight.normal,
+            ),
+            inputFormatters: mergedFormatters,
             decoration: InputDecoration(
               prefixIcon: CircleAvatar(
                 backgroundColor: Colors.teal.withValues(alpha: 0.1),
@@ -99,30 +133,34 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
                   : null,
               labelText: widget.label,
               labelStyle: TextStyle(
-                color: _focusNode.hasFocus
-                    ? AppColors.primary
-                    : Colors.grey.shade600,
+                color: widget.isEditing ? editColor : Colors.grey.shade600,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
+
               filled: true,
               fillColor: Colors.white,
+
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(color: borderColor),
               ),
+
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: AppColors.primary, width: 2),
+                borderSide: BorderSide(color: borderColor, width: 2),
               ),
+
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
+
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
+
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 18.0,
                 horizontal: 16.0,

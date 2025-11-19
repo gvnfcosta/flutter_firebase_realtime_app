@@ -152,7 +152,10 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
         title: const Text('Perfil do Usuário'),
         actions: [
           IconButton(
-            icon: Icon(_isEditing ? Icons.check : Icons.edit),
+            icon: Icon(
+              _isEditing ? Icons.check : Icons.edit,
+              color: Colors.orange,
+            ),
             onPressed: () {
               if (_isEditing) {
                 _saveClient();
@@ -161,7 +164,10 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
               }
             },
           ),
-          IconButton(icon: const Icon(Icons.delete), onPressed: _onDelete),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: _onDelete,
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -179,6 +185,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
               readOnly: !_isEditing,
               keyboardType: TextInputType.phone,
               onChanged: (_) {},
+              isEditing: _isEditing,
             ),
 
             // NASCIMENTO
@@ -187,6 +194,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
               label: "Nascimento",
               controller: _birthdayCtrl,
               readOnly: !_isEditing,
+              isEditing: _isEditing,
               onTap: _isEditing
                   ? () async {
                       // opcional: você pode abrir um datepicker se quiser
@@ -201,6 +209,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
               controller: _weightCtrl,
               keyboardType: TextInputType.number,
               readOnly: !_isEditing,
+              isEditing: _isEditing,
             ),
 
             // CÓDIGO DO CLIENTE
@@ -209,6 +218,7 @@ class _ClientDetailScreenState extends State<ClientDetailScreen> {
               label: "Código",
               initialValue: c.id,
               readOnly: true,
+              isEditing: _isEditing,
             ),
           ],
         ),

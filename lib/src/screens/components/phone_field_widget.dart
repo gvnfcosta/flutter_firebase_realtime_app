@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-import '../../common/custom_text_field.dart';
+import '../../common/custom_text_form_field.dart';
 
 class PhoneFieldWidget extends StatelessWidget {
   final TextEditingController controller;
@@ -17,12 +17,13 @@ class PhoneFieldWidget extends StatelessWidget {
       type: MaskAutoCompletionType.lazy,
     );
 
-    return CustomTextField(
+    return CustomTextFormField(
       label: 'Telefone',
       controller: controller,
       icon: Icons.phone,
       keyboardType: TextInputType.phone,
       inputFormatters: [phoneFormatter],
+
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Campo obrigatório';
